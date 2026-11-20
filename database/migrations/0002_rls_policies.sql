@@ -12,7 +12,6 @@ ALTER TABLE public.job_postings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.job_private_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.engagements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE
   public.worker_profiles,
@@ -20,8 +19,7 @@ REVOKE ALL ON TABLE
   public.job_postings,
   public.job_private_locations,
   public.applications,
-  public.engagements,
-  public.reviews
+  public.engagements
 FROM PUBLIC, anonymous, authenticated;
 
 GRANT USAGE ON SCHEMA public TO anonymous, authenticated;
@@ -147,40 +145,10 @@ CREATE POLICY engagements_participants_select ON public.engagements
   );
 GRANT SELECT ON public.engagements TO authenticated;
 
--- AVALIAÇÕES: uma por lado em cada contratação (UNIQUE em 0001).
--- Não permitir notas antes de o serviço estar concluído.
--- Sem UPDATE, DELETE ou leitura da avaliação recebida nesta fase.
-CREATE POLICY reviews_author_insert ON public.reviews
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    author_user_id = (SELECT auth.user_id())
-    AND moderation_state = 'pending'
-    AND EXISTS (
-      SELECT 1 FROM public.engagements e
-      WHERE e.id = public.reviews.engagement_id
-        AND e.status = 'completed'
-        AND (
-          (author_side = 'worker'
-            AND e.worker_user_id = (SELECT auth.user_id()))
-          OR
-          (author_side = 'company'
-            AND EXISTS (
-              SELECT 1 FROM public.companies c
-              WHERE c.id = e.company_id
-                AND c.owner_user_id = (SELECT auth.user_id())
-            ))
-        )
-    )
-  );
-CREATE POLICY reviews_author_select ON public.reviews
-  FOR SELECT TO authenticated
-  USING (author_user_id = (SELECT auth.user_id()));
-GRANT SELECT, INSERT ON public.reviews TO authenticated;
-
 -- Conferência rápida em ambiente Neon:
 -- SELECT tablename, rowsecurity FROM pg_tables
 -- WHERE schemaname = 'public' AND tablename IN
 -- ('worker_profiles','companies','job_postings','job_private_locations',
---  'applications','engagements','reviews');
+--  'applications','engagements');
 -- SELECT * FROM pg_policies WHERE schemaname = 'public';
 COMMIT;
