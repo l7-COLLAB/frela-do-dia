@@ -63,7 +63,7 @@ CREATE POLICY job_postings_company_own_list ON public.job_postings
   USING (
     EXISTS (
       SELECT 1 FROM public.companies c
-      WHERE c.id = public.engagements.company_id
+      WHERE c.id = public.job_postings.company_id
         AND c.owner_user_id = (SELECT auth.user_id())
     )
   );
@@ -141,7 +141,7 @@ CREATE POLICY engagements_participants_select ON public.engagements
     worker_user_id = (SELECT auth.user_id())
     OR EXISTS (
       SELECT 1 FROM public.companies c
-      WHERE c.id = public.job_postings.company_id
+      WHERE c.id = public.engagements.company_id
         AND c.owner_user_id = (SELECT auth.user_id())
     )
   );
