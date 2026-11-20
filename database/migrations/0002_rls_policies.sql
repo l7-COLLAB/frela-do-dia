@@ -63,7 +63,7 @@ CREATE POLICY job_postings_company_own_list ON public.job_postings
   USING (
     EXISTS (
       SELECT 1 FROM public.companies c
-      WHERE c.id = company_id
+      WHERE c.id = public.engagements.company_id
         AND c.owner_user_id = (SELECT auth.user_id())
     )
   );
@@ -75,7 +75,7 @@ CREATE POLICY job_postings_company_submit ON public.job_postings
     AND published_at IS NULL
     AND EXISTS (
       SELECT 1 FROM public.companies c
-      WHERE c.id = company_id
+      WHERE c.id = public.job_postings.company_id
         AND c.owner_user_id = (SELECT auth.user_id())
         AND c.verification_state = 'verified'
     )
@@ -92,11 +92,11 @@ CREATE POLICY job_private_locations_authorized_read ON public.job_private_locati
     EXISTS (
       SELECT 1 FROM public.job_postings j
       JOIN public.companies c ON c.id = j.company_id
-      WHERE j.id = job_id AND c.owner_user_id = (SELECT auth.user_id())
+      WHERE j.id = public.job_private_locations.job_id AND c.owner_user_id = (SELECT auth.user_id())
     )
     OR EXISTS (
       SELECT 1 FROM public.engagements e
-      WHERE e.job_id = job_id
+      WHERE e.job_id = public.job_private_locations.job_id
         AND e.worker_user_id = (SELECT auth.user_id())
         AND e.status IN ('accepted','completed')
     )
@@ -112,7 +112,7 @@ CREATE POLICY applications_worker_insert ON public.applications
     AND status = 'submitted'
     AND EXISTS (
       SELECT 1 FROM public.job_postings j
-      WHERE j.id = job_id
+      WHERE j.id = public.applications.job_id
         AND j.status = 'published'
         AND j.ends_at > now()
     )
@@ -126,7 +126,7 @@ CREATE POLICY applications_participants_select ON public.applications
     OR EXISTS (
       SELECT 1 FROM public.job_postings j
       JOIN public.companies c ON c.id = j.company_id
-      WHERE j.id = job_id
+      WHERE j.id = public.applications.job_id
         AND c.owner_user_id = (SELECT auth.user_id())
     )
   );
@@ -141,7 +141,7 @@ CREATE POLICY engagements_participants_select ON public.engagements
     worker_user_id = (SELECT auth.user_id())
     OR EXISTS (
       SELECT 1 FROM public.companies c
-      WHERE c.id = company_id
+      WHERE c.id = public.job_postings.company_id
         AND c.owner_user_id = (SELECT auth.user_id())
     )
   );
@@ -157,7 +157,7 @@ CREATE POLICY reviews_author_insert ON public.reviews
     AND moderation_state = 'pending'
     AND EXISTS (
       SELECT 1 FROM public.engagements e
-      WHERE e.id = engagement_id
+      WHERE e.id = public.reviews.engagement_id
         AND e.status = 'completed'
         AND (
           (author_side = 'worker'
