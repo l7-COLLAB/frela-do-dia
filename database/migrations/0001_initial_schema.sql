@@ -99,23 +99,6 @@ CREATE TABLE public.engagements (
 CREATE INDEX engagements_worker_idx ON public.engagements(worker_user_id);
 CREATE INDEX engagements_company_idx ON public.engagements(company_id);
 
--- Avaliações não são públicas neste MVP. Aprovação e disputa são processos administrativos.
-CREATE TABLE public.reviews (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  engagement_id uuid NOT NULL REFERENCES public.engagements(id),
-  author_user_id text NOT NULL DEFAULT (auth.user_id()),
-  author_side text NOT NULL CHECK(author_side IN ('worker','company')),
-  overall_score smallint NOT NULL CHECK(overall_score BETWEEN 1 AND 5),
-  criteria jsonb NOT NULL CHECK(jsonb_typeof(criteria) = 'object'),
-  comment text CHECK(char_length(comment) <= 1000),
-  moderation_state text NOT NULL DEFAULT 'pending'
-    CHECK(moderation_state IN ('pending','approved','hidden','contested')),
-  submitted_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT reviews_one_per_side UNIQUE(engagement_id,author_side)
-);
-CREATE INDEX reviews_author_idx ON public.reviews(author_user_id);
-
-
 -- Proteção de base aplicada ANTES do primeiro COMMIT, evitando janela
 -- de exposição mesmo se 0002 ainda não tiver sido executada.
 ALTER TABLE public.worker_profiles ENABLE ROW LEVEL SECURITY;
@@ -124,12 +107,11 @@ ALTER TABLE public.job_postings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.job_private_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.engagements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE
   public.worker_profiles, public.companies, public.job_postings,
   public.job_private_locations, public.applications,
-  public.engagements, public.reviews
+  public.engagements
 FROM PUBLIC, anonymous, authenticated;
 
 COMMIT;
