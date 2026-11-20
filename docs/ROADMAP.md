@@ -7,7 +7,7 @@
 - [x] Publicação demonstrativa de oportunidades
 - [x] Currículo com modelos e opção de PDF
 - [x] Avisos claros de demonstração
-- [x] Interface de avaliação bilateral simulada, com critérios para trabalhador e contratante
+- [x] Avaliações removidas da demonstração inicial, com proposta arquivada para fase futura
 
 ## Fase 1 — Validação da demanda (próxima)
 - [ ] Entrevistar ao menos 10 empresas locais
@@ -36,6 +36,13 @@
 - [ ] Vagas destacadas e planos para contratantes
 - [ ] Alertas por cidade, função e período, com opt-in
 - [ ] Métricas de conversão e funil de aquisição local
+
+## Fase futura (após o MVP estar consolidado)
+- [ ] Avaliações bilaterais após conclusão de serviços e verificação da contratação
+- [ ] Canal privado para contestação de pagamento e tentativa de acordo
+- [ ] Critérios de comprovação, análise humana, recurso e linguagem pública proporcional
+- [ ] Testes específicos de RLS, LGPD, antifraude e revisão jurídica
+- [ ] Ver [proposta arquivada](FUTURE_REVIEWS.md)
 
 ## Fora do escopo inicial
 - Intermediação financeira da remuneração do trabalhador
