@@ -47,24 +47,22 @@ Depois, executar [verify_access.sql](../database/tests/verify_access.sql) e os t
 
 Usar contas de teste independentes: trabalhador A, trabalhador B, empresa A, empresa B e administrador com função confiável.
 
-1. Sem login: ler vagas publicadas futuras; não conseguir ler perfis, empresas, candidaturas, endereços ou avaliações.
+1. Sem login: ler vagas publicadas futuras; não conseguir ler perfis, empresas, candidaturas ou endereços.
 2. Trabalhador A: consegue ler/editar seu próprio perfil; não consegue ler/editar perfil do trabalhador B.
 3. Trabalhador A: insere candidatura apenas para si mesmo em vaga publicada e válida. Tentativa em vaga encerrada falha.
 4. Empresa A: vê apenas seus dados e candidaturas de vagas próprias. Não lê candidaturas da empresa B.
 5. Empresa não verificada: não publica uma vaga diretamente. Empresa verificada insere apenas vaga em estado pendente; não altera o estado para publicada.
 6. Trabalhador sem contratação aceita: não acessa endereço exato. Participante com contratação aceita: acessa somente o endereço da própria vaga.
-7. Trabalhador/empresa: não consegue criar contratação concluída diretamente, mudar status de candidatura ou aprovar a própria avaliação.
-8. Trabalhador B não envolvido: não consegue avaliar serviço alheio; participante não consegue avaliar serviço ainda não concluído.
-9. Ambas as partes: uma única avaliação por lado por contratação; nota da outra parte permanece privada nesta fase.
-10. Realizar esses testes via **Data API com tokens válidos emitidos pelo Neon Auth**, não apenas com usuário superprivilegiado no SQL Editor.
+7. Trabalhador/empresa: não consegue criar contratação concluída diretamente nem mudar status de candidatura.
+8. Realizar esses testes via **Data API com tokens válidos emitidos pelo Neon Auth**, não apenas com usuário superprivilegiado no SQL Editor.
 
 ## Backend e cuidados de segurança
 
-- A aprovação de empresas, publicação de vagas, confirmação de contratações, endereços completos e moderação de avaliações exigem endpoints de backend com autorização explícita e logs de auditoria.
+- A aprovação de empresas, publicação de vagas, confirmação de contratações, endereços completos e moderação de anúncios exigem endpoints de backend com autorização explícita e logs de auditoria.
 - Não basta existir RLS: funções e processos administrativos que usam credenciais privilegiadas podem contorná-la. Proteger estas credenciais em Secrets da Cloudflare e limitar seu escopo.
 - Antes de adicionar uploads de currículo, definir autorização de leitura de objetos, tamanho/formato permitido, retenção e exclusão; RLS de tabelas não protege automaticamente arquivos no Object Storage.
 - RLS protege linhas; para políticas LGPD, também são necessários consentimentos/base legal, transparência, minimização, exclusão, respostas a titulares e procedimentos para incidentes.
-- Uma avaliação negativa, alegação de desvio de função ou de falta de pagamento não deve aparecer automaticamente como acusação pública. Implantar contestação e moderação antes.
+- Avaliações e disputas sobre pagamentos estão fora do MVP. A proposta futura está documentada em [FUTURE_REVIEWS.md](FUTURE_REVIEWS.md).
 - Não ativar cadastramento real nem recolher currículos enquanto essas verificações não forem concluídas.
 
 ## Referências técnicas
@@ -77,3 +75,7 @@ Usar contas de teste independentes: trabalhador A, trabalhador B, empresa A, emp
 
 A versão atual em `index.html` usa dados fictícios e `localStorage`. Isso foi preservado propositalmente.
 A implementação do login e das chamadas reais será uma etapa posterior ao sucesso dos testes de RLS.
+
+## Decisão de escopo (20/11/2026)
+
+As seis tabelas iniciais tratam de perfis, empresas, vagas, endereços privados, candidaturas e contratações. **Avaliações, notas e contestações de pagamento não serão criadas nesta fase.** Nenhuma migração posterior de disputa deve ser executada sem nova aprovação e revisão de segurança.
