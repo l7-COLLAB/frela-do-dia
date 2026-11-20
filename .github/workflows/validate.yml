@@ -12,3 +12,5 @@ jobs:
           node-version: '22'
       - name: Testar HTML e JavaScript
         run: node tests/smoke.mjs
+      - name: Validar estrutura e invariantes de RLS
+        run: node tests/rls-static.mjs
