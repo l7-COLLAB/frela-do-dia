@@ -30,9 +30,10 @@ Quando decidir tornar a demonstração pública: abra **Settings → Pages → B
 
 ## Banco de dados e segurança (Neon — em preparação)
 
-A próxima arquitetura usará **Neon PostgreSQL + Managed Neon Auth + Data API**, com RLS e um backend seguro na Cloudflare.
+A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API**, com RLS e um backend seguro na Cloudflare.
 
 - [Guia de configuração e testes](docs/NEON_SETUP.md)
+- [Funcionalidades futuras: avaliações e contestação privada](docs/FUTURE_REVIEWS.md)
 - [Esquema inicial](database/migrations/0001_initial_schema.sql)
 - [Políticas RLS](database/migrations/0002_rls_policies.sql)
 - [Auditoria SQL](database/tests/verify_access.sql)
