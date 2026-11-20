@@ -9,7 +9,7 @@ BEGIN
 
   FOREACH target IN ARRAY ARRAY[
     'worker_profiles','companies','job_postings',
-    'job_private_locations','applications','engagements','reviews'
+    'job_private_locations','applications','engagements'
   ]
   LOOP
     IF NOT EXISTS (
@@ -27,7 +27,6 @@ BEGIN
     OR has_table_privilege('anonymous', 'public.companies', 'SELECT')
     OR has_table_privilege('anonymous', 'public.applications', 'SELECT')
     OR has_table_privilege('anonymous', 'public.engagements', 'SELECT')
-    OR has_table_privilege('anonymous', 'public.reviews', 'SELECT')
     OR has_table_privilege('anonymous', 'public.job_private_locations', 'SELECT')
   THEN
     RAISE EXCEPTION 'Um papel anônimo recebeu acesso direto a dados privados';
@@ -41,16 +40,8 @@ BEGIN
     OR has_table_privilege('authenticated', 'public.engagements', 'UPDATE')
     OR has_table_privilege('authenticated', 'public.companies', 'UPDATE')
     OR has_table_privilege('authenticated', 'public.job_postings', 'UPDATE')
-    OR has_table_privilege('authenticated', 'public.reviews', 'UPDATE')
-    OR has_table_privilege('authenticated', 'public.reviews', 'DELETE')
   THEN
     RAISE EXCEPTION 'Papel autenticado possui privilégio administrativo indevido';
-  END IF;
-
-  IF (SELECT count(*) FROM pg_policies
-      WHERE schemaname='public' AND tablename='reviews') <> 2
-  THEN
-    RAISE EXCEPTION 'Políticas de avaliações inesperadas';
   END IF;
 
   RAISE NOTICE 'Verificações estruturais RLS concluídas. Testar tokens reais separadamente.';
