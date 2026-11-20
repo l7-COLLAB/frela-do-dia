@@ -23,8 +23,8 @@ Pesquisa de referência (novembro/2026):
 | Vaga de emprego fixo (30 dias) | R$ 19,90 | 1 anúncio, renovação manual |
 | Destaque de vaga (7 dias) | R$ 14,90 | Aparece em destaque; identificado |
 | Aviso comercial local (7 dias) | R$ 9,90 | Oferta, mudança de horário ou novidade |
-| Plano Comércio Local (30 dias) | R$ 39,90 | Até 4 avisos, sem publicidade ilimitada |
-| Plano Empresas (30 dias) | R$ 59,90 | Até 3 vagas fixas; outros usos negociados |
+| Plano Comércio Local (30 dias) | R$ 29,90 | Até 4 avisos, desconto sobre avulsos |
+| Plano Empresas (30 dias) | R$ 49,90 | Até 3 vagas fixas, desconto sobre avulsos |
 | Currículo premium (opcional) | R$ 7,99 | Modelo especial e edição |
  
 **Teste comercial:** conversar com 10–15 empresas locais, conseguir publicações verificadas e validar disposição de pagar antes de lançar o checkout. Não prometer candidaturas ou contratações em troca da taxa de anúncio. Revisar atividade econômica e tributação antes de faturar.
