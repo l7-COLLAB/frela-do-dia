@@ -7,6 +7,7 @@
 - [x] Publicação demonstrativa de oportunidades
 - [x] Currículo com modelos e opção de PDF
 - [x] Avisos claros de demonstração
+- [x] Interface de avaliação bilateral simulada, com critérios para trabalhador e contratante
 
 ## Fase 1 — Validação da demanda (próxima)
 - [ ] Entrevistar ao menos 10 empresas locais
