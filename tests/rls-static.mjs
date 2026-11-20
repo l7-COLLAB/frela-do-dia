@@ -17,8 +17,9 @@ assert.ok(initial.indexOf('REVOKE ALL ON TABLE')<initial.lastIndexOf('COMMIT;'),
 assert.match(policies,/CREATE POLICY job_postings_public_list[\s\S]+?status = 'published' AND ends_at > now\(\)/);
 assert.match(policies,/CREATE POLICY companies_owner_request[\s\S]+?verification_state = 'pending'/);
 assert.match(policies,/CREATE POLICY job_postings_company_submit[\s\S]+?status = 'pending'[\s\S]+?verification_state = 'verified'/);
-assert.match(policies,/CONSTRAINT|GRANT SELECT, INSERT ON public\.reviews/);
 assert.match(policies,/e\.job_id = public\.job_private_locations\.job_id/);
+assert.doesNotMatch(initial,/CREATE TABLE public\.reviews/);
+assert.doesNotMatch(policies,/CREATE POLICY reviews_/);
 assert.doesNotMatch(policies,/e\.job_id = job_id/,'Evitar correlação ambígua que expõe endereços de outras vagas');
 assert.match(policies,/GRANT SELECT ON public\.job_postings TO anonymous, authenticated/);
 assert.doesNotMatch(policies,/GRANT (?:ALL|UPDATE|DELETE) ON public\.(?:job_postings|engagements|companies) TO authenticated/);
