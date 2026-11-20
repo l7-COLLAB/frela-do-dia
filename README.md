@@ -28,6 +28,19 @@ Quando decidir tornar a demonstração pública: abra **Settings → Pages → B
 
 **Nota:** a publicação da demo não transforma o sistema em um serviço real. Dados introduzidos nos formulários ficam apenas no navegador; não há backend e nenhuma vaga é verificada.
 
+## Banco de dados e segurança (Neon — em preparação)
+
+A próxima arquitetura usará **Neon PostgreSQL + Managed Neon Auth + Data API**, com RLS e um backend seguro na Cloudflare.
+
+- [Guia de configuração e testes](docs/NEON_SETUP.md)
+- [Esquema inicial](database/migrations/0001_initial_schema.sql)
+- [Políticas RLS](database/migrations/0002_rls_policies.sql)
+- [Auditoria SQL](database/tests/verify_access.sql)
+
+**As migrações estão versionadas, mas não foram aplicadas a nenhum banco de dados.**
+O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
+Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
+
 ## Roadmap
 
 Consulte [docs/ROADMAP.md](docs/ROADMAP.md) para prioridades e [docs/PRODUCT.md](docs/PRODUCT.md) para escopo e regras de negócio.
