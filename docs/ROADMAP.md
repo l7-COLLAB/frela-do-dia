@@ -16,6 +16,20 @@
 - [ ] Definir política de moderação, critérios e regras de publicação
 - [ ] Validar a marca e disponibilidade de domínio
 
+## Decisão de produto — expansão regional aprovada para planejamento
+- [x] Pesquisar recursos e opções de monetização regional sem modificar a interface pública
+- [ ] Permitir contratar como pessoa física ou empresa, com verificação e moderação distintas
+- [ ] Diferenciar vaga fixa, trabalho temporário e serviço pontual
+- [ ] Implementar encerramento automático/manual e status "preenchida" / "expirada"
+- [ ] Permitir duplicar uma vaga como rascunho, com confirmação de nova data, horário, remuneração e vagas
+- [ ] Implementar agenda privada de entrevistas, trabalhos e candidaturas
+- [ ] Adicionar conversa privada entre participantes de candidaturas autenticadas (chat simples, sem anexos)
+- [ ] Adicionar PWA e notificações opt-in para iPhone e Android (novas vagas, mensagens e agenda)
+- [ ] Criar anúncios de emprego fixo e destaques pagos, após validar demanda
+- [ ] Criar mural comercial separado com ofertas, notícias de empresas e horários especiais
+- [ ] Criar planos mensais para anunciantes após homologar checkout e conciliação
+- [ ] Ver [especificação e preços de teste](EXPANSAO_REGIONAL_E_MONETIZACAO.md)
+
 ## Fase 2 — MVP funcional
 - [x] Modelar tabelas e preparar políticas Neon RLS no GitHub (não implantadas)
 - [x] Documentar matriz de acesso, testes estáticos e guia de homologação
