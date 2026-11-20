@@ -1,0 +1,38 @@
+# Roadmap de desenvolvimento
+
+## Fase 0 — Protótipo
+- [x] Página inicial responsiva
+- [x] Filtros e visualização de vagas fictícias
+- [x] Perfil de trabalhador demonstrativo
+- [x] Publicação demonstrativa de oportunidades
+- [x] Currículo com modelos e opção de PDF
+- [x] Avisos claros de demonstração
+
+## Fase 1 — Validação da demanda (próxima)
+- [ ] Entrevistar ao menos 10 empresas locais
+- [ ] Validar quais tipos de serviços e diárias têm demanda
+- [ ] Entrevistar trabalhadores sobre disponibilidade e confiança
+- [ ] Definir política de moderação, critérios e regras de publicação
+- [ ] Validar a marca e disponibilidade de domínio
+
+## Fase 2 — MVP funcional
+- [ ] Definir arquitetura e ambiente separados dos outros projetos
+- [ ] Banco de dados, autenticação e políticas de acesso (RLS)
+- [ ] Cadastro e verificação de empresas/contratantes
+- [ ] Gestão real de vagas, expiração e moderação
+- [ ] Candidaturas com privacidade e confirmação de envio
+- [ ] Painel administrativo e trilha de auditoria
+- [ ] Termos, política de privacidade e controles LGPD
+- [ ] Testes de acessibilidade e fluxos mobile
+
+## Fase 3 — Monetização e crescimento
+- [ ] Perfis profissionais completos e currículo opcional
+- [ ] Currículo premium e integração de pagamento por Pix
+- [ ] Vagas destacadas e planos para contratantes
+- [ ] Alertas por cidade, função e período, com opt-in
+- [ ] Métricas de conversão e funil de aquisição local
+
+## Fora do escopo inicial
+- Intermediação financeira da remuneração do trabalhador
+- Garantia de contratação e pagamento
+- Avaliações públicas de pessoas sem política de moderação
