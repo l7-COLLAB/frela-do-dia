@@ -27,16 +27,8 @@ Pessoas com disponibilidade imediata têm dificuldade para localizar trabalhos p
 - Política de privacidade, termos de uso e canal para titulares de dados.
 
 
-## Avaliações bilaterais (projeto de funcionalidade)
-- A avaliação só poderá ser criada depois de a contratação ser registrada, confirmada e concluída.
-- Trabalhador avalia contratante: pagamento do valor anunciado, cumprimento de intervalos informados, escopo das tarefas e condições de segurança.
-- Contratante avalia trabalhador: comparecimento, pontualidade, cumprimento do período, execução das atividades e comunicação.
-- Uma avaliação por lado e por contratação; notas de 1 a 5, critérios objetivos e comentário opcional.
-- Cada parte avalia independentemente; o desenho definitivo deve evitar influência ou retaliação por nota.
-- Condições factuais potencialmente controvertidas (não pagamento, desvio de função, intervalo não concedido) deverão ter fluxo privado de contestação e análise.
-- Não transformar denúncias, notas isoladas ou avaliações não verificadas em penalidades automáticas ou afirmações públicas.
-- Perfil público exibirá apenas dados agregados quando houver amostra suficiente e moderação efetiva, respeitando LGPD e normas aplicáveis.
-- Demonstração atual: avaliações fictícias guardadas somente no navegador do dispositivo, sem autenticação, comprovação de prestação ou publicação.
+## Avaliações e contestações: adiadas
+As notas bilaterais e a contestação de falta de pagamento **não serão oferecidas no lançamento inicial**. A proposta foi preservada em [funcionalidades futuras](FUTURE_REVIEWS.md). O MVP não publicará acusações, reputações nem mensagens de disputa.
 
 ## Modelo de receita — hipótese para validação
 - Busca e candidatura gratuitas.
