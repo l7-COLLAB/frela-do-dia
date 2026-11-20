@@ -115,4 +115,21 @@ CREATE TABLE public.reviews (
 );
 CREATE INDEX reviews_author_idx ON public.reviews(author_user_id);
 
+
+-- Proteção de base aplicada ANTES do primeiro COMMIT, evitando janela
+-- de exposição mesmo se 0002 ainda não tiver sido executada.
+ALTER TABLE public.worker_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.job_postings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.job_private_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.engagements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE
+  public.worker_profiles, public.companies, public.job_postings,
+  public.job_private_locations, public.applications,
+  public.engagements, public.reviews
+FROM PUBLIC, anonymous, authenticated;
+
 COMMIT;
