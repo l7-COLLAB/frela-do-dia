@@ -42,6 +42,11 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
+## Planejamento de novas funcionalidades
+
+- [Expansão regional, contratação por pessoas físicas, agenda, chat, notificações e monetização](docs/EXPANSAO_REGIONAL_E_MONETIZACAO.md)
+- **Status:** plano documentado, não implementado. O protótipo público continua inalterado.
+
 ## Roadmap
 
 Consulte [docs/ROADMAP.md](docs/ROADMAP.md) para prioridades e [docs/PRODUCT.md](docs/PRODUCT.md) para escopo e regras de negócio.
