@@ -27,6 +27,21 @@ Pessoas com disponibilidade imediata têm dificuldade para localizar trabalhos p
 - Política de privacidade, termos de uso e canal para titulares de dados.
 
 
+## Evolução proposta: trabalho, agenda e comércio local
+
+O site mantém sua identidade visual atual e terá três áreas funcionais:
+1. **Trabalhos e vagas:** serviços pontuais (inclusive anúncios de moradores), temporários e empregos fixos, com categorias e regras de contratação distintas.
+2. **Minha agenda e conversas:** eventos do trabalhador, entrevistas e compromissos; chat privado por candidatura e notificações opcionais.
+3. **Comércio de Ijuí:** novidades, ofertas e alterações de horários em seção própria, sem misturar promoções a vagas.
+
+Os controles do anunciante terão **encerrar/preenchida**, expiração automática e **duplicar para novo rascunho**. A duplicação nunca replica candidaturas, mensagens ou pagamentos, exigindo confirmação dos novos detalhes.
+
+Funcionalidades comerciais propostas: anúncio de vaga fixa, destaque opcional, avisos de comércio e planos mensais. Os valores ainda são hipóteses sem validação. O trabalhador não paga para buscar ou se candidatar.
+
+Todas as extensões que tratam de dados pessoais dependerão de autenticação, RLS, moderação e testes reais no Neon, antes de serem disponibilizadas ao público.
+
+Detalhes, ordem de implementação, termos de segurança e referências: [EXPANSAO_REGIONAL_E_MONETIZACAO.md](EXPANSAO_REGIONAL_E_MONETIZACAO.md).
+
 ## Avaliações e contestações: adiadas
 As notas bilaterais e a contestação de falta de pagamento **não serão oferecidas no lançamento inicial**. A proposta foi preservada em [funcionalidades futuras](FUTURE_REVIEWS.md). O MVP não publicará acusações, reputações nem mensagens de disputa.
 
