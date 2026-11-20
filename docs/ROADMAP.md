@@ -17,6 +17,10 @@
 - [ ] Validar a marca e disponibilidade de domínio
 
 ## Fase 2 — MVP funcional
+- [x] Modelar tabelas e preparar políticas Neon RLS no GitHub (não implantadas)
+- [x] Documentar matriz de acesso, testes estáticos e guia de homologação
+- [ ] Conectar projeto Neon e aplicar migrações em branch de teste
+- [ ] Executar testes reais com contas e JWTs distintos
 - [ ] Definir arquitetura e ambiente separados dos outros projetos
 - [ ] Banco de dados, autenticação e políticas de acesso (RLS)
 - [ ] Cadastro e verificação de empresas/contratantes
