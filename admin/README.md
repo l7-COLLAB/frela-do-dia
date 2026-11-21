@@ -2,7 +2,7 @@
 
 **Endereço público:** https://frela-do-dia.l7526080.workers.dev/painel/
 
-**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Login e ações reais ainda requerem conta administrativa habilitada e testes com JWTs válidos. A página pública de vagas permanece um protótipo com anúncios fictícios.
+**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A autenticação usa **Magic Link** (link por e-mail com duração de 10 minutos), sem senha. A sessão com JWT real ainda deve ser homologada. A página pública de vagas permanece um protótipo com anúncios fictícios.
 
 ## O que já existe
 
@@ -12,7 +12,7 @@
 - Endpoint protegido `GET /v1/admin/queue` no Worker de API e endpoint `POST /v1/admin/decision`.
 - Funções do Neon `frela_admin_queue` e `frela_admin_decide`, que exigem JWT válido **e operador presente na allowlist privada** do banco.
 - Registro das decisões de moderação em `app_private.audit_events`, conforme migração 0006.
-- Nenhuma conta administrativa foi criada ou autorizada automaticamente.
+- Uma conta administrativa de desenvolvimento foi cadastrada manualmente no Neon Auth e autorizada na tabela privada, vinculada ao ID da conta. O e-mail não é divulgado no repositório.
 - Não existem dados ou vagas reais carregados nesta fase.
 
 ## Separação de segurança
@@ -21,28 +21,26 @@
 2. Neon Auth emite o token de autenticação para o usuário.
 3. O browser envia o JWT à API da Cloudflare, sem uma senha administrativa.
 4. A API encaminha ao RPC do Neon; **o banco rejeita quem não está autorizado**, inclusive usuários autenticados comuns.
-5. A tabela `app_private.admin_operators` não é exposta e começa **vazia**, com `active=false` por padrão.
+5. A tabela `app_private.admin_operators` não é exposta. Há **um operador de desenvolvimento ativo**, criado manualmente; novos cadastros de usuário continuam bloqueados.
 6. O esquema privado não tem permissões para `anonymous` nem `authenticated`.
 7. O frontend jamais é um controle de segurança suficiente, a proteção é verificada no Neon em toda ação.
 
-## Como habilitar sua própria conta administrativa, depois da homologação
+## Acesso administrativo de homologação
 
-- Criar e verificar a conta **do titular autorizado** no Neon Auth de desenvolvimento, usando e-mail real. O usuário define suas credenciais diretamente no fluxo seguro, sem compartilhá-las no chat.
-- Confirmar o ID real de usuário retornado pelo Neon Auth e, **somente no SQL Console do Neon de desenvolvimento**, inserir manualmente a autorização:
-  
-  ```sql
-  INSERT INTO app_private.admin_operators(user_id, active, grant_reason)
-  VALUES ('ID_VERIFICADO_DO_NEON_AUTH', true,
-          'Administradora responsável pelo ambiente de desenvolvimento');
-  ```
+1. Abra https://frela-do-dia.l7526080.workers.dev/painel/.
+2. Informe o e-mail **previamente cadastrado e autorizado** no Neon Auth e selecione **Enviar link seguro de acesso**.
+3. Abra a mensagem na mesma conta de e-mail e siga o link recebido. Ele expira em **10 minutos**, e o reenvio possui um intervalo mínimo na interface.
+4. O Neon Auth gerencia a sessão. O painel envia um JWT à API Cloudflare, que exige a presença do ID do usuário na tabela privada de administradores.
+5. Faça logout ao terminar. Não compartilhe o link de acesso nem o token, e não utilize dados de pessoas reais enquanto a homologação não estiver concluída.
 
-- Essa operação é exclusivamente administrativa, após confirmar a identidade do titular. **Nunca** aceitar um ID de usuário enviado pela interface pública para conceder acesso.
-- Testar login, encerramento de sessão, acesso negado a outro usuário e decisões com auditoria.
-- No ambiente `production`, implementar novo fluxo controlado, sem copiar automaticamente contas ou testes.
+**Configuração:** o plugin Magic Link foi habilitado **somente no Neon de desenvolvimento**, com `disable_sign_up=true`; cadastro público por e-mail/senha permanece desativado. A conta criada ainda não possuía sessão autenticada quando a autorização foi registrada. O login por Magic Link comprova controle da caixa postal ao criar uma sessão.
+
+**Acesso não é fornecido pelo e-mail digitado:** somente o JWT emitido pelo Neon para o ID autorizado libera as consultas. Não inserir operador diretamente a partir de uma requisição pública.
+
 
 ## Limitações registradas
 
-- **Não foi confirmada uma sessão real de login no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
+- **Não foi confirmada uma sessão real de login via Magic Link no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
 - Dependência ESM do SDK no navegador utiliza versão fixa via CDN; a disponibilidade e o comportamento em Safari iPhone devem ser confirmados antes de abrir a operação.
 - A publicação do Worker foi confirmada via Cloudflare API, e a rota foi acrescentada ao código. Não foi possível verificar a resposta HTTP externa do domínio nesta sessão.
 - O preenchimento da fila pública ainda é vazio: cadastros e anúncios verdadeiros não estão abertos.
