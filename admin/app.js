@@ -201,7 +201,7 @@ $('resetPasswordForm').addEventListener('submit',async e=>{
  const otp=$('recoveryOtp').value.trim();
  const password=$('newPassword').value;
  const confirmation=$('confirmPassword').value;
- if(!/^\\d{6}$/.test(otp)){
+ if(!/^[0-9]{6}$/.test(otp)){
   status('Digite os seis números do código recebido por e-mail.',true);return;
  }
  if(password.length<12||password.length>128){
