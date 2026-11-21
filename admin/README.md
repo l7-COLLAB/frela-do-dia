@@ -38,6 +38,18 @@
 **Acesso não é fornecido pelo e-mail digitado:** somente o JWT emitido pelo Neon para o ID autorizado libera as consultas. Não inserir operador diretamente a partir de uma requisição pública.
 
 
+## Correção de sessão no Gmail / iPhone — 21/11/2026
+
+Após o primeiro link de acesso, a interface mostrou **“Sessão expirada. Entre novamente.”** mesmo com uma sessão registrada no Neon Auth e com o e-mail verificado. O diagnóstico apontou que o código consultava somente `auth.token().data.token`; essa chamada não forneceu o token naquele contexto.
+
+- O frontend passa a priorizar o **JWT retornado em `auth.getSession().data.session.token`**, conforme a documentação do plugin JWT do Neon; mantém `auth.token()` como alternativa para SDKs compatíveis.
+- O valor é validado quanto ao formato JWT antes de ser enviado à API. Tokens opacos de sessão não são enviados como bearer.
+- Um botão **“Tentar acessar novamente”** permite reconsultar a API sem reenviar e-mail enquanto houver sessão local.
+- Se o navegador interno do Gmail não conseguir disponibilizar a sessão à API, orientar a abertura do painel no **Safari**, solicitando novo link somente quando necessário.
+- Foram adicionados [testes de recuperação de token](../tests/admin-token.mjs) (quatro cenários) e revisadas as verificações estáticas.
+
+**Estado confirmado:** e-mail verificado e uma sessão ativa no Neon Auth; testes simulados do código passaram. Ainda falta a confirmação de login completo no Safari/Gmail com um JWT real e a resposta da API ao token.
+
 ## Limitações registradas
 
 - **Não foi confirmada uma sessão real de login via Magic Link no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
