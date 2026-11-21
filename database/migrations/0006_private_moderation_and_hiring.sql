@@ -67,6 +67,18 @@ BEGIN
      WHERE id = p_hirer_id;
   END IF;
 
+  -- Suspender um anunciante também encerra seus anúncios em circulação.
+  -- Novas publicações ficarão bloqueadas pela checagem de verificação.
+  IF p_decision = 'suspended' THEN
+    UPDATE public.job_postings
+       SET status='closed', updated_at=now()
+     WHERE status='published'
+       AND (
+         (p_kind='company' AND company_id=p_hirer_id)
+         OR (p_kind='individual_hirer' AND individual_hirer_id=p_hirer_id)
+       );
+  END IF;
+
   INSERT INTO app_private.audit_events(
     operator_id,event_kind,subject_kind,subject_id,old_state,new_state,justification
   ) VALUES (
