@@ -3,7 +3,7 @@
 const AUTH_URL = 'https://ep-plain-mountain-bcbr91e0.neonauth.c-16.us-east-1.aws.neon.tech/frela_do_dia/auth';
 const API_URL = 'https://frela-do-dia-api-dev.l7526080.workers.dev';
 const $ = id => document.getElementById(id);
-let auth, user=null, queue=null, currentTab='companies', decision=null, busy=false;
+let auth, user=null, queue=null, commercial=null, currentTab='companies', currentSection='overview', decision=null, busy=false;
 const categories={
  companies:{name:'Empresas',kind:'company'},
  individuals:{name:'Pessoas físicas',kind:'individual_hirer'},
@@ -11,7 +11,7 @@ const categories={
 };
 function status(msg,error=false){$('status').textContent=msg;$('status').classList.toggle('error',error)}
 function setBusy(value){busy=value;for(const b of document.querySelectorAll('button'))b.disabled=value}
-function showLogin(){user=null;queue=null;$('dashboard').hidden=true;$('decisionPanel').hidden=true;$('loginPanel').hidden=false;$('logoutInLogin').hidden=true;$('retryAccess').hidden=true}
+function showLogin(){user=null;queue=null;commercial=null;$('dashboard').hidden=true;$('decisionPanel').hidden=true;$('loginPanel').hidden=false;$('logoutInLogin').hidden=true;$('retryAccess').hidden=true}
 function showSession(u){user=u;$('loginPanel').hidden=true;$('dashboard').hidden=false;$('identity').textContent='Conta: '+(u.email||'usuário autenticado');$('decisionPanel').hidden=true;$('retryAccess').hidden=true}
 // Managed Neon Auth pode entregar o JWT junto com a sessão (JWT plugin).
 // Uma sessão válida no cookie NÃO significa que auth.token() sempre devolva data.token.
@@ -107,14 +107,169 @@ function openDecision(item,action){
  $('decisionPanel').hidden=false;
  $('decisionPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+const moneyBRL = cents => new Intl.NumberFormat('pt-BR',{
+ style:'currency',currency:'BRL'
+}).format((Number(cents)||0)/100);
+const dateBR = iso =>{
+ if(!iso)return 'Não informado';
+ const value=new Date(iso);
+ return Number.isNaN(value.getTime())?'Não informado':value.toLocaleDateString('pt-BR');
+};
+function parsePriceCents(raw){
+ const match=String(raw||'').trim().match(/^([0-9]{1,6})(?:[.,]([0-9]{1,2}))?$/);
+ if(!match)return null;
+ const cents=Number(match[1])*100+Number((match[2]||'').padEnd(2,'0'));
+ return Number.isSafeInteger(cents)&&cents>=0&&cents<=10000000?cents:null;
+}
+function switchSection(name){
+ if(!['overview','review','advertisers','offers','billing','activity'].includes(name))return;
+ currentSection=name;
+ for(const button of document.querySelectorAll('[data-section]')){
+  if(button.dataset.section===name)button.setAttribute('aria-current','page');
+  else button.removeAttribute('aria-current');
+ }
+ for(const key of ['overview','review','advertisers','offers','billing','activity']){
+  $(key+'Section').hidden=key!==name;
+ }
+ $('decisionPanel').hidden=true;decision=null;
+}
+function blankList(container,message){
+ const node=$(container);node.replaceChildren();
+ addText(node,'div',message,'empty');
+}
+function renderCommercial(){
+ if(!commercial)return;
+ const o=commercial.overview||{};
+ const counts={
+  overviewCompanies:o.registeredCompanies||0,
+  overviewPeople:o.registeredIndividuals||0,
+  overviewWorkers:o.registeredWorkers||0,
+  overviewJobs:o.publishedJobs||0,
+  overviewPaying:o.payingCustomers||0,
+  billingCustomers:o.payingCustomers||0,
+  billingOrders:o.paidReceipts||0
+ };
+ for(const [id,value] of Object.entries(counts))$(id).textContent=String(value);
+ $('overviewRevenue').textContent=moneyBRL(o.confirmedRevenueCents);
+ $('billingRevenue').textContent=moneyBRL(o.confirmedRevenueCents);
+ const pending=(Number(queue?.companies?.length||0)+Number(queue?.individuals?.length||0)+Number(queue?.jobs?.length||0));
+ $('overviewPending').textContent=pending===0?'Nenhuma solicitação pendente no momento.':pending+' solicitação(ões) aguardando análise.';
+ $('billingNotice').textContent=o.paymentGatewayIntegrated?
+  'Exibindo somente pagamentos confirmados pelo provedor.':
+  'Checkout Pix/cartão ainda NÃO integrado. Não há recebimentos automáticos. Os valores mostrados representam apenas registros confirmados no banco.';
+ renderAdvertisers();renderOffers();renderBilling();renderHistory();
+}
+const kindLabel=kind=>kind==='company'?'Empresa':kind==='individual_hirer'?'Pessoa física':kind==='worker'?'Trabalhador':kind||'Não informado';
+const stateLabel=state=>({
+ pending:'Pendente',verified:'Verificado',rejected:'Rejeitado',suspended:'Suspenso'
+})[state]||state||'Não informado';
+function renderAdvertisers(){
+ const host=$('advertiserItems');host.replaceChildren();
+ const filter=$('advertiserFilter').value;
+ const records=(commercial.advertisers||[]).filter(entry=>filter==='all'||entry.verification_state===filter);
+ if(!records.length){blankList('advertiserItems','Nenhum anunciante encontrado neste filtro.');return}
+ for(const advertiser of records){
+  const item=document.createElement('article');item.className='item data-item';
+  addText(item,'span',kindLabel(advertiser.kind),'mini');
+  addText(item,'h3',advertiser.display_name||'Anunciante');
+  addText(item,'p',[advertiser.city,stateLabel(advertiser.verification_state),'Cadastrado em '+dateBR(advertiser.created_at)].filter(Boolean).join(' · '));
+  host.append(item);
+ }
+}
+function renderOffers(){
+ const host=$('offerItems');host.replaceChildren();
+ const offers=commercial.offers||[];
+ if(!offers.length){blankList('offerItems','Nenhum pacote configurado no catálogo.');return}
+ for(const offer of offers){
+  const item=document.createElement('article');item.className='item offer-row';
+  const top=document.createElement('div');top.className='offer-top';
+  const heading=document.createElement('div');
+  addText(heading,'h3',offer.label||offer.code);
+  addText(heading,'p',offer.description||'');
+  addText(heading,'p',offer.charge_type==='monthly'?'Cobrança mensal prevista · '+(offer.included_quantity||1)+' anúncio(s) incluído(s)':'Pagamento avulso previsto'+(offer.duration_days?' · '+offer.duration_days+' dias':''));
+  const price=addText(top,'strong',moneyBRL(offer.price_cents),'offer-price');
+  top.prepend(heading);item.append(top);
+  const form=document.createElement('form');form.className='offer-form';
+  const priceField=document.createElement('div');
+  const pLabel=addText(priceField,'label','Novo valor (R$)');
+  const pInput=document.createElement('input');pInput.type='text';pInput.inputMode='decimal';pInput.required=true;pInput.maxLength=10;pInput.value=(Number(offer.price_cents)/100).toFixed(2).replace('.',',');pInput.setAttribute('aria-label','Preço de '+(offer.label||offer.code));
+  pLabel.append(pInput);
+  const reasonField=document.createElement('div');
+  const rLabel=addText(reasonField,'label','Motivo da alteração');
+  const rInput=document.createElement('input');rInput.type='text';rInput.required=true;rInput.minLength=10;rInput.maxLength=500;rInput.placeholder='Ex.: revisão do preço para lançamento';rInput.setAttribute('aria-label','Justificativa para '+(offer.label||offer.code));
+  rLabel.append(rInput);
+  const submit=document.createElement('button');submit.type='submit';submit.className='btn primary';submit.textContent='Salvar valor';
+  form.append(priceField,reasonField,submit);
+  form.addEventListener('submit',async event=>{
+   event.preventDefault();if(busy||!user)return;
+   const cents=parsePriceCents(pInput.value),reason=rInput.value.trim();
+   if(cents===null){status('Informe um valor em reais válido. Exemplo: 29,90.',true);return}
+   if(cents===Number(offer.price_cents)){status('O novo preço precisa ser diferente do atual.',true);return}
+   if(reason.length<10){status('Informe uma justificativa de pelo menos 10 caracteres.',true);return}
+   if(!window.confirm('Confirma a alteração de '+(offer.label||offer.code)+' para '+moneyBRL(cents)+'? O checkout não será ativado.'))return;
+   setBusy(true);
+   try{
+    const result=await callApi('/v1/admin/pricing',{method:'POST',body:{
+      p_code:offer.code,p_price_cents:cents,p_expected_revision:offer.revision,p_reason:reason
+    }});
+    if(result?.ok!==true)throw new Error('A API não confirmou a alteração do preço.');
+    status('Preço registrado no Neon. A alteração não ativa cobrança automática.');
+   }catch(error){status('Não foi possível salvar: '+(error.message||'erro desconhecido'),true);setBusy(false);return}
+   setBusy(false);
+   await refresh();
+  });
+  item.append(form);host.append(item);
+ }
+}
+function renderBilling(){
+ const clients=$('payingClientItems');clients.replaceChildren();
+ const rows=commercial.payingClients||[];
+ if(!rows.length)blankList('payingClientItems','Ainda não há clientes com pagamento confirmado no Frela do Dia.');
+ for(const client of rows){
+  const item=document.createElement('article');item.className='item data-item';
+  addText(item,'span',kindLabel(client.payer_kind),'mini');
+  addText(item,'h3',client.display_name||'Cliente');
+  addText(item,'p',(client.paid_orders||0)+' pagamento(s) · Total: '+moneyBRL(client.total_paid_cents)+' · Último: '+dateBR(client.last_paid_at));
+  clients.append(item);
+ }
+ const host=$('paymentItems');host.replaceChildren();
+ const recent=commercial.recentPayments||[];
+ if(!recent.length)blankList('paymentItems','Não existem recebimentos confirmados registrados.');
+ for(const receipt of recent){
+  const item=document.createElement('article');item.className='item data-item';
+  addText(item,'h3',receipt.payer_display_name||'Cliente');
+  addText(item,'p',[moneyBRL(receipt.amount_cents),receipt.offer_code,dateBR(receipt.paid_at)].join(' · '));
+  host.append(item);
+ }
+}
+function renderHistory(){
+ const host=$('historyItems');host.replaceChildren();
+ const changes=commercial.priceHistory||[];
+ if(!changes.length){blankList('historyItems','Nenhuma alteração de preços registrada ainda.');return}
+ for(const change of changes){
+  const item=document.createElement('article');item.className='item data-item';
+  addText(item,'h3',change.offer_code||'Pacote');
+  addText(item,'p',moneyBRL(change.old_price_cents)+' → '+moneyBRL(change.new_price_cents)+' · '+dateBR(change.changed_at));
+  addText(item,'p',change.reason||'');
+  host.append(item);
+ }
+}
+
 async function refresh(){
  if(!user)return;
  setBusy(true);
  try{
-  const data=await callApi('/v1/admin/queue');
-  if(!data||!Array.isArray(data.companies)||!Array.isArray(data.individuals)||!Array.isArray(data.jobs))throw new Error('O servidor não devolveu a fila esperada.');
-  queue=data;showSession(user);render();
-  status('Fila administrativa carregada. Todas as decisões exigem justificativa.');
+  const [data,business]=await Promise.all([
+   callApi('/v1/admin/queue'),
+   callApi('/v1/admin/business')
+  ]);
+  if(!data||!Array.isArray(data.companies)||!Array.isArray(data.individuals)||!Array.isArray(data.jobs))
+    throw new Error('O servidor não devolveu a fila de moderação esperada.');
+  if(!business||!business.overview||!Array.isArray(business.offers)||!Array.isArray(business.advertisers))
+    throw new Error('O servidor não devolveu o relatório comercial esperado.');
+  queue=data;commercial=business;showSession(user);render();renderCommercial();switchSection(currentSection);
+  status('Dados administrativos atualizados. Os valores são de desenvolvimento.');
  }catch(e){
   queue=null;$('dashboard').hidden=true;$('loginPanel').hidden=false;
   $('logoutInLogin').hidden=false;
@@ -257,6 +412,13 @@ $('retryAccess').addEventListener('click',async()=>{
  if(user){await refresh();return;}
  await initialize();
 });
+for(const btn of document.querySelectorAll('[data-section]'))btn.addEventListener('click',()=>{
+ if(queue&&commercial)switchSection(btn.dataset.section);
+});
+for(const btn of document.querySelectorAll('[data-go]'))btn.addEventListener('click',()=>{
+ if(queue&&commercial)switchSection(btn.dataset.go);
+});
+$('advertiserFilter').addEventListener('change',()=>{if(commercial)renderAdvertisers()});
 for(const btn of document.querySelectorAll('[data-tab]'))btn.addEventListener('click',()=>{
  if(!queue)return;currentTab=btn.dataset.tab;render();
 });
