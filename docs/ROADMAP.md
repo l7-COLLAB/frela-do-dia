@@ -36,9 +36,12 @@
 - [ ] Ver [especificação e preços de teste](EXPANSAO_REGIONAL_E_MONETIZACAO.md)
 
 ## Fase 2 — MVP funcional
-- [x] Modelar tabelas e preparar políticas Neon RLS no GitHub (não implantadas)
+- [x] Modelar tabelas e registrar políticas Neon RLS no GitHub
+- [x] Criar projeto Neon `frela-do-dia` e branch de testes `development-rls`
+- [x] Habilitar Neon Auth e Data API na branch de testes; novos cadastros desativados
+- [x] Executar migrações 0001, 0002 e 0003 na branch de testes, com verificação estrutural
 - [x] Documentar matriz de acesso, testes estáticos e guia de homologação
-- [ ] Conectar projeto Neon e aplicar migrações em branch de teste
+- [x] Conectar projeto Neon e aplicar migrações em branch de teste
 - [ ] Executar testes reais com contas e JWTs distintos
 - [ ] Definir arquitetura e ambiente separados dos outros projetos
 - [ ] Banco de dados, autenticação e políticas de acesso (RLS)
