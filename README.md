@@ -40,11 +40,21 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 - [Esquema inicial](database/migrations/0001_initial_schema.sql)
 - [Políticas RLS](database/migrations/0002_rls_policies.sql)
 - [Ponte de identidade do Neon Auth](database/migrations/0003_neon_auth_rls_bridge.sql)
+- [Contratantes pessoa física e modalidades de vaga](database/migrations/0004_individual_hirers_and_job_types.sql)
+- [RLS de pessoas físicas, vagas e candidaturas](database/migrations/0005_individual_hirer_rls.sql)
+- [Teste de integridade PF/PJ](database/tests/verify_hirer_and_jobs.sql)
+- [Teste de negação sem JWT](database/tests/verify_roles_no_jwt.sql)
 - [Auditoria SQL](database/tests/verify_access.sql)
 
-**Migrações 0001, 0002 e 0003 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS ligada nas seis tabelas, privilégios estruturais e acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
+**Migrações 0001 a 0005 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS nas **sete tabelas**, privilégios estruturais, integridade dos anunciantes e negação de acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
+
+## Autenticação em desenvolvimento
+
+O código do [módulo de login de homologação](auth-preview/README.md) foi preparado com o SDK oficial **Neon Auth**, usando URL de autenticação pública e a Data API da branch de teste. Inclui login por e-mail/senha, restauração de sessão, leitura do próprio perfil com JWT, logout e mensagens de erro.
+
+**O módulo ainda não está implantado na página pública**. O cadastro público no Neon de desenvolvimento continua **desativado**; não há usuário de teste autenticado com senha disponível nesta conversa. Os testes com JWTs de diferentes usuários e o fluxo completo no navegador permanecem pendentes. Nunca usar credenciais administrativas ou URL PostgreSQL no frontend.
 
 ## Planejamento de novas funcionalidades
 
