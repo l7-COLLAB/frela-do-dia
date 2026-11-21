@@ -25,7 +25,9 @@
 - [x] Criar allowlist privada de operadores e funções RPC protegidas por autenticação
 - [x] Integrar frontend do painel à API Cloudflare de desenvolvimento, com validação e auditabilidade
 - [x] Executar teste reversível de acesso negado a usuário comum e decisão administrativa simulada
-- [ ] Habilitar conta de administradora verificada e testar login JWT real no Safari e desktop
+- [x] Criar conta administrativa de desenvolvimento por e-mail e configurar Magic Link restrito a usuários existentes
+- [x] Registrar exclusivamente a identidade administrativa autorizada no Neon de desenvolvimento
+- [ ] Concluir o primeiro login por Magic Link com sessão/JWT reais e verificar no Safari e desktop
 - [ ] Implementar validação documental e homologação de moderação real para PF e PJ
 - [x] Diferenciar, na interface demonstrativa, emprego fixo, diária e serviço pontual
 - [x] Modelar os três tipos de vaga no Neon de testes, com regras de remuneração
