@@ -94,7 +94,7 @@ As tabelas `app_private.commercial_offers`, `app_private.commercial_price_histor
 
 ## Painel administrativo na rota pública (acesso restrito)
 
-O [painel](../admin/README.md) está publicado em `/painel/`, sem substituir a página de vagas. A API da Cloudflare encaminha o JWT à Neon Data API, que autentica e executa `frela_admin_queue` e `frela_admin_decide`. Ambas exigem um operador **ativo** cadastrado exclusivamente no schema privado. Não existem contas administrativas autorizadas ainda. Não inserir credenciais no GitHub.
+O [painel](../admin/README.md) está publicado em `/painel/`, sem substituir a página de vagas. A API da Cloudflare encaminha o JWT à Neon Data API, que autentica e executa `frela_admin_queue` e `frela_admin_decide`. Ambas exigem um operador **ativo** cadastrado exclusivamente no schema privado. Uma conta administrativa de desenvolvimento foi autorizada e a titular confirmou que conseguiu entrar no painel em 21/11/2026; as funções comerciais novas ainda precisam de homologação no iPhone. Não inserir credenciais no GitHub.
 
 A migração 0007 foi executada no Neon `development-rls`. O [teste reversível](../database/tests/verify_admin_rpc_simulated.sql) passou em branch isolada: usuário sem permissão foi bloqueado; administrador simulado consultou e aprovou um cadastro; trilha de auditoria foi criada; todos os dados de teste foram revertidos.
 
