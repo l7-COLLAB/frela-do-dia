@@ -29,6 +29,10 @@ jobs:
           node tests/admin-password.mjs
           node tests/admin-business.mjs
           node tests/admin-resilience.mjs
+      - name: Validar contas de homologação e rotas de perfis
+        run: |
+          node --check account/app.js
+          node tests/account-onboarding.mjs
       - name: Instalar dependências do login de homologação
         working-directory: auth-preview
         run: npm install --no-audit --no-fund
