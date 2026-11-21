@@ -4,6 +4,20 @@
 
 **Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A interface atual usa **e-mail e senha**, com uma opção separada para definir a primeira senha por **código OTP enviado ao e-mail**. A sessão com JWT real ainda precisa ser homologada no navegador. A página pública de vagas permanece um protótipo com anúncios fictícios.
 
+## Gestão comercial adicionada em 21/11/2026
+
+O painel foi ampliado com navegação entre **Visão geral**, **Moderação**, **Anunciantes**, **Pacotes e preços**, **Financeiro** e **Histórico**.
+
+- **Visão geral:** totais de trabalhadores, empresas, PFs, vagas abertas, clientes pagantes e receita confirmada.
+- **Anunciantes:** relação separada de empresas e pessoas físicas cadastradas, por status de verificação. Não implica pagamento.
+- **Pacotes:** seis produtos pagos do planejamento, com preços editáveis em reais, confirmação e justificativa. Salva no Neon de desenvolvimento e registra o histórico. O checkout público continua desligado.
+- **Financeiro:** lista clientes pagantes e recebimentos confirmados pelo provedor. Como **ainda não há checkout nem pagamentos integrados**, os números são zero e a interface informa essa limitação.
+- **Histórico:** registra as mudanças de preços para auditoria.
+
+A migração [0008](../database/migrations/0008_commercial_admin.sql) cria o catálogo, a trilha de alterações e a estrutura privada para futuros recebimentos. O Worker de API agora serve `GET /v1/admin/business` e `POST /v1/admin/pricing`. As chamadas exigem JWT válido e o operador autorizado no Neon, com controle de concorrência no preço.
+
+[Documentação completa do painel comercial](../docs/PAINEL_COMERCIAL.md).
+
 ## O que já existe
 
 - Página responsiva de login, com a identidade visual aprovada.
