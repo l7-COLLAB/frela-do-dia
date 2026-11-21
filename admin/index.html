@@ -28,12 +28,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 <main class="shell">
  <div class="hero"><div><div class="eyebrow">GESTÃO DA PLATAFORMA</div><h1>Painel administrativo</h1><p>Anunciantes, vagas e decisões de moderação em um só lugar.</p></div><span class="badge">ACESSO RESTRITO • TESTES</span></div>
  <section class="panel login" id="loginPanel" aria-label="Acesso administrativo">
-   <h2>Entrar na administração</h2>
+   <h2>Acesso por e-mail</h2>
    <p>Somente contas previamente autorizadas podem acessar os registros e aprovar anúncios. Novos cadastros estão desativados.</p>
    <form id="loginForm">
-     <label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required maxlength="254">
-     <label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" minlength="8" required>
-     <button class="btn primary" type="submit" style="width:100%;margin-top:20px">Entrar com segurança</button>
+     <label for="email">E-mail autorizado</label><input id="email" type="email" autocomplete="username" required maxlength="254" placeholder="seu@email.com">
+     <button class="btn primary" type="submit" style="width:100%;margin-top:20px">Enviar link seguro de acesso</button>
+     <p class="fine" style="margin-top:14px">Você receberá um link temporário no e-mail cadastrado. Acesse sua caixa de entrada e abra o link no mesmo dispositivo. Nenhuma senha é solicitada.</p>
    </form>
    <button id="logoutInLogin" class="btn outline" type="button" hidden style="width:100%;margin-top:10px">Sair da conta conectada</button>
    <p class="fine" style="margin-top:20px">Este painel utiliza a infraestrutura de desenvolvimento do Neon. Nenhum anúncio real é recebido ou publicado nesta etapa.</p>
