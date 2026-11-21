@@ -7,15 +7,23 @@ const api = readFileSync(new URL('../backend/dev-readonly-worker.js', import.met
 const main = readFileSync(new URL('../backend/public-site-worker.js', import.meta.url),'utf8');
 const sql = readFileSync(new URL('../database/migrations/0007_admin_dashboard_access.sql', import.meta.url),'utf8');
 
-for(const id of ['loginPanel','loginForm','email','dashboard','decisionPanel','decisionForm','justification','countCompanies','countIndividuals','countJobs','items','status','logoutInLogin','refresh','logout']){
+for(const id of ['loginPanel','loginForm','email','password','toggleRecovery','recoveryPanel','requestRecoveryForm','recoveryEmail','resetPasswordForm','recoveryOtp','newPassword','confirmPassword','dashboard','decisionPanel','decisionForm','justification','countCompanies','countIndividuals','countJobs','items','status','logoutInLogin','refresh','logout']){
  assert.ok(html.includes('id="'+id+'"'), 'Campo administrativo ausente: '+id);
 }
 assert.match(html, /noindex,nofollow/);
 assert.match(html, /ACESSO RESTRITO/);
-assert.match(app, /auth\.signIn\.magicLink/);
-assert.match(app, /callbackURL/);
-assert.doesNotMatch(html, /type="password"/);
-assert.match(html, /Enviar link seguro de acesso/);
+assert.match(app, /auth\.signIn\.email/);
+assert.match(app, /auth\.forgetPassword\.emailOtp/);
+assert.match(app, /auth\.emailOtp\.resetPassword/);
+assert.match(html, /type="password"/);
+assert.match(html, /autocomplete="current-password"/);
+assert.match(html, /autocomplete="new-password"/);
+assert.match(html, /autocomplete="one-time-code"/);
+assert.match(html, /Definir ou recuperar senha/);
+assert.doesNotMatch(html, /Enviar link seguro de acesso/);
+assert.doesNotMatch(app, /auth\.signIn\.magicLink/);
+assert.doesNotMatch(app, /signUp\.email/);
+assert.match(app, /password!==confirmation/, 'Confirmação de nova senha obrigatória');
 assert.match(app, /auth\.getSession/);
 assert.match(app, /current\.data\.session\?\.token/, 'Precisamos aceitar JWT retornado junto da sessão Neon');
 assert.match(app, /issued\?\.data\?\.token/, 'Manter fallback auth.token para SDKs diferentes');
