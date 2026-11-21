@@ -19,9 +19,11 @@
 ## Decisão de produto — expansão regional aprovada para planejamento
 - [x] Pesquisar recursos e opções de monetização regional sem modificar a interface pública
 - [x] Demonstrar formulário para empresas e pessoas físicas
-- [ ] Implementar identidade verificada e moderação real para ambos os tipos
+- [x] Criar tabela PF separada e políticas RLS por proprietário no Neon de testes
+- [ ] Implementar verificação de identidade e moderação real para PF e PJ
 - [x] Diferenciar, na interface demonstrativa, emprego fixo, diária e serviço pontual
-- [ ] Criar os três tipos de vaga no banco e nas APIs reais
+- [x] Modelar os três tipos de vaga no Neon de testes, com regras de remuneração
+- [ ] Integrar os três tipos às APIs reais e ao painel administrativo
 - [x] Simular preenchimento de vagas, encerramento manual e expiração por data no navegador
 - [ ] Implementar bloqueio real de candidaturas e lotação em transações seguras
 - [x] Demonstrar duplicação com confirmação de data, horário, remuneração e quantidade, sem copiar candidaturas
@@ -42,9 +44,12 @@
 - [x] Executar migrações 0001, 0002 e 0003 na branch de testes, com verificação estrutural
 - [x] Documentar matriz de acesso, testes estáticos e guia de homologação
 - [x] Conectar projeto Neon e aplicar migrações em branch de teste
-- [ ] Executar testes reais com contas e JWTs distintos
+- [x] Executar testes de integridade do banco e negativas de acesso sem token
+- [ ] Executar testes reais com contas e JWTs distintos (pendente)
 - [ ] Definir arquitetura e ambiente separados dos outros projetos
-- [ ] Banco de dados, autenticação e políticas de acesso (RLS)
+- [x] Preparar módulo de login Neon Auth em diretório de homologação no GitHub
+- [ ] Publicar, testar e integrar login à interface principal
+- [ ] Homologar banco, autenticação e RLS antes de abrir cadastros
 - [ ] Cadastro e verificação de empresas/contratantes
 - [ ] Gestão real de vagas, expiração e moderação
 - [ ] Candidaturas com privacidade e confirmação de envio
