@@ -28,6 +28,7 @@ jobs:
           node tests/admin-token.mjs
           node tests/admin-password.mjs
           node tests/admin-business.mjs
+          node tests/admin-resilience.mjs
       - name: Instalar dependências do login de homologação
         working-directory: auth-preview
         run: npm install --no-audit --no-fund
