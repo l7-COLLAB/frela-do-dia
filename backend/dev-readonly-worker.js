@@ -29,6 +29,20 @@ const ROUTES = Object.freeze({
     public: false
   }
 });
+// Conta do titular: operações estritamente autenticadas, sem privilégios administrativos.
+// A validação JWT e a RLS do PostgreSQL pertencem à Neon Data API.
+const ACCOUNT_ROUTES=Object.freeze({
+ '/v1/account':{method:'GET',rpc:'frela_account_self',fields:{}},
+ '/v1/account/worker':{method:'POST',rpc:'frela_account_save_worker',fields:{
+   p_display_name:[2,100],p_city:[2,100],p_bio:[0,800],p_availability:[0,250]
+ }},
+ '/v1/account/individual':{method:'POST',rpc:'frela_account_register_individual',fields:{
+   p_display_name:[2,90],p_city:[2,100]
+ }},
+ '/v1/account/company':{method:'POST',rpc:'frela_account_register_company',fields:{
+   p_legal_name:[2,180],p_display_name:[2,120],p_city:[2,100]
+ }}
+});
 function cors(origin) {
   const headers = {
     'Content-Type':'application/json; charset=utf-8',
@@ -55,12 +69,60 @@ export default {
     const originAllowed=!origin||ALLOWED_ORIGINS.has(origin);
     if(!originAllowed) return respond({error:'origin_not_allowed'},403);
     if(request.method==='OPTIONS'){
-      if(!ROUTES[url.pathname]&&url.pathname!=='/health'&&url.pathname!=='/v1/admin/queue'&&url.pathname!=='/v1/admin/decision'&&url.pathname!=='/v1/admin/business'&&url.pathname!=='/v1/admin/pricing')return respond({error:'not_found'},404,origin);
+      if(!ROUTES[url.pathname]&&!ACCOUNT_ROUTES[url.pathname]&&url.pathname!=='/health'&&url.pathname!=='/v1/admin/queue'&&url.pathname!=='/v1/admin/decision'&&url.pathname!=='/v1/admin/business'&&url.pathname!=='/v1/admin/pricing')return respond({error:'not_found'},404,origin);
       return new Response(null,{status:204,headers:cors(origin)});
     }
     if(url.pathname==='/health'&&request.method==='GET'){
       return respond({service:'frela-do-dia-api-dev',status:'ok',environment:'development',publicWrites:false,adminRequiresAuthorization:true},200,origin);
     }
+    const account=ACCOUNT_ROUTES[url.pathname];
+    if(account){
+      if(request.method!==account.method)return respond({error:'method_not_allowed'},405,origin);
+      const token=request.headers.get('Authorization')||'';
+      if(!/^Bearer [^\\s]+$/.test(token)||token.length<40||token.length>8192)
+        return respond({error:'authentication_required'},401,origin);
+      let args={};
+      if(account.method==='POST'){
+        try{
+          const length=Number(request.headers.get('Content-Length')||0);
+          if(length>2400)return respond({error:'payload_too_large'},413,origin);
+          const raw=await request.text();
+          if(raw.length>2400)return respond({error:'payload_too_large'},413,origin);
+          const body=JSON.parse(raw);
+          if(!body||typeof body!=='object'||Array.isArray(body))throw Error('bad_payload');
+          const keys=Object.keys(body);
+          const allowed=Object.keys(account.fields);
+          if(keys.some(k=>!allowed.includes(k)))throw Error('extra_fields');
+          for(const [name,[min,max]] of Object.entries(account.fields)){
+            const val=body[name];
+            if((val===null||val===undefined)&&min===0){args[name]=null;continue;}
+            if(typeof val!=='string'||val.trim().length<min||val.trim().length>max)
+              throw Error('invalid_field');
+            args[name]=val.trim()||(min===0?null:'');
+          }
+        }catch(_){return respond({error:'invalid_profile_data'},400,origin)}
+      }
+      try{
+        const upstream=await fetch(NEON_DATA_API+'/rpc/'+account.rpc,{
+          method:'POST',
+          headers:{Authorization:token,'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify(args),
+          cache:'no-store',signal:AbortSignal.timeout(8000)
+        });
+        if(upstream.status===401)return respond({error:'unauthorized'},401,origin);
+        if(upstream.status===403)return respond({error:'forbidden'},403,origin);
+        if(upstream.status===400||upstream.status===409)return respond({error:'profile_conflict_or_invalid'},409,origin);
+        if(!upstream.ok)return respond({error:'database_unavailable'},502,origin);
+        const result=await upstream.json();
+        if(!result||typeof result!=='object'||Array.isArray(result))return respond({error:'unexpected_database_response'},502,origin);
+        if(account.method==='GET'&&!('worker' in result&&'individual' in result&&'company' in result))
+          return respond({error:'unexpected_database_response'},502,origin);
+        if(account.method==='POST'&&result.saved!==true)
+          return respond({error:'unexpected_database_response'},502,origin);
+        return respond(result,200,origin);
+      }catch(_){return respond({error:'temporarily_unavailable'},502,origin)}
+    }
+
     const isAdminQueue=url.pathname==='/v1/admin/queue';
     const isAdminDecision=url.pathname==='/v1/admin/decision';
     const isAdminBusiness=url.pathname==='/v1/admin/business';
