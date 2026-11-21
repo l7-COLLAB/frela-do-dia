@@ -79,7 +79,7 @@ export default {
     if(account){
       if(request.method!==account.method)return respond({error:'method_not_allowed'},405,origin);
       const token=request.headers.get('Authorization')||'';
-      if(!/^Bearer [^\\s]+$/.test(token)||token.length<40||token.length>8192)
+      if(!/^Bearer [^\s]+$/.test(token)||token.length<40||token.length>8192)
         return respond({error:'authentication_required'},401,origin);
       let args={};
       if(account.method==='POST'){
