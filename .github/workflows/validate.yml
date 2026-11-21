@@ -26,6 +26,7 @@ jobs:
           node --check backend/public-site-worker.js
           node tests/admin-static.mjs
           node tests/admin-token.mjs
+          node tests/admin-password.mjs
       - name: Instalar dependências do login de homologação
         working-directory: auth-preview
         run: npm install --no-audit --no-fund
