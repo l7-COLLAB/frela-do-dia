@@ -18,11 +18,16 @@
 
 ## Decisão de produto — expansão regional aprovada para planejamento
 - [x] Pesquisar recursos e opções de monetização regional sem modificar a interface pública
-- [ ] Permitir contratar como pessoa física ou empresa, com verificação e moderação distintas
-- [ ] Diferenciar vaga fixa, trabalho temporário e serviço pontual
-- [ ] Implementar encerramento automático/manual e status "preenchida" / "expirada"
-- [ ] Permitir duplicar uma vaga como rascunho, com confirmação de nova data, horário, remuneração e vagas
-- [ ] Implementar agenda privada de entrevistas, trabalhos e candidaturas
+- [x] Demonstrar formulário para empresas e pessoas físicas
+- [ ] Implementar identidade verificada e moderação real para ambos os tipos
+- [x] Diferenciar, na interface demonstrativa, emprego fixo, diária e serviço pontual
+- [ ] Criar os três tipos de vaga no banco e nas APIs reais
+- [x] Simular preenchimento de vagas, encerramento manual e expiração por data no navegador
+- [ ] Implementar bloqueio real de candidaturas e lotação em transações seguras
+- [x] Demonstrar duplicação com confirmação de data, horário, remuneração e quantidade, sem copiar candidaturas
+- [ ] Implementar duplicação no backend como novo rascunho sujeito a revisão
+- [x] Demonstrar agenda pessoal com compromissos salvos no aparelho
+- [ ] Sincronizar agenda privada por conta autenticada, com lembretes e exportação
 - [ ] Adicionar conversa privada entre participantes de candidaturas autenticadas (chat simples, sem anexos)
 - [ ] Adicionar PWA e notificações opt-in para iPhone e Android (novas vagas, mensagens e agenda)
 - [ ] Criar anúncios de emprego fixo e destaques pagos, após validar demanda
