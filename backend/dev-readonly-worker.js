@@ -55,7 +55,7 @@ export default {
     const originAllowed=!origin||ALLOWED_ORIGINS.has(origin);
     if(!originAllowed) return respond({error:'origin_not_allowed'},403);
     if(request.method==='OPTIONS'){
-      if(!ROUTES[url.pathname]&&url.pathname!=='/health'&&url.pathname!=='/v1/admin/queue'&&url.pathname!=='/v1/admin/decision')return respond({error:'not_found'},404,origin);
+      if(!ROUTES[url.pathname]&&url.pathname!=='/health'&&url.pathname!=='/v1/admin/queue'&&url.pathname!=='/v1/admin/decision'&&url.pathname!=='/v1/admin/business'&&url.pathname!=='/v1/admin/pricing')return respond({error:'not_found'},404,origin);
       return new Response(null,{status:204,headers:cors(origin)});
     }
     if(url.pathname==='/health'&&request.method==='GET'){
@@ -63,14 +63,16 @@ export default {
     }
     const isAdminQueue=url.pathname==='/v1/admin/queue';
     const isAdminDecision=url.pathname==='/v1/admin/decision';
-    if(isAdminQueue||isAdminDecision){
-      if(isAdminQueue&&request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
-      if(isAdminDecision&&request.method!=='POST')return respond({error:'method_not_allowed'},405,origin);
+    const isAdminBusiness=url.pathname==='/v1/admin/business';
+    const isAdminPricing=url.pathname==='/v1/admin/pricing';
+    if(isAdminQueue||isAdminDecision||isAdminBusiness||isAdminPricing){
+      if((isAdminQueue||isAdminBusiness)&&request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
+      if((isAdminDecision||isAdminPricing)&&request.method!=='POST')return respond({error:'method_not_allowed'},405,origin);
       const token=request.headers.get('Authorization')||'';
       if(!/^Bearer [^\s]+$/.test(token)||token.length<40||token.length>8192)
         return respond({error:'authentication_required'},401,origin);
       let rpcBody={};
-      if(isAdminDecision){
+      if(isAdminDecision||isAdminPricing){
         const len=Number(request.headers.get('Content-Length')||0);
         if(len>3200)return respond({error:'payload_too_large'},413,origin);
         try {
@@ -78,17 +80,27 @@ export default {
           if(raw.length>3200) return respond({error:'payload_too_large'},413,origin);
           const obj=JSON.parse(raw);
           if(!obj||Array.isArray(obj)||typeof obj!=='object')throw Error('bad_json');
-          if(Object.keys(obj).sort().join(',')!=='p_decision,p_id,p_justification,p_kind')throw Error('unexpected_fields');
-          if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(obj.p_id||''))throw Error('bad_id');
-          if(!['company','individual_hirer','job_posting'].includes(obj.p_kind))throw Error('bad_kind');
-          if(!(['company','individual_hirer'].includes(obj.p_kind)?
+          if(isAdminDecision&&Object.keys(obj).sort().join(',')!=='p_decision,p_id,p_justification,p_kind')throw Error('unexpected_fields');
+          if(isAdminDecision&&!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(obj.p_id||''))throw Error('bad_id');
+          if(isAdminDecision&&!['company','individual_hirer','job_posting'].includes(obj.p_kind))throw Error('bad_kind');
+          if(isAdminDecision&&!(['company','individual_hirer'].includes(obj.p_kind)?
                  ['verified','rejected','suspended'].includes(obj.p_decision):
                  ['published','rejected'].includes(obj.p_decision)))throw Error('bad_decision');
-          if(typeof obj.p_justification!=='string'||obj.p_justification.trim().length<10||obj.p_justification.length>1200)throw Error('bad_reason');
-          rpcBody={p_kind:obj.p_kind,p_id:obj.p_id,p_decision:obj.p_decision,p_justification:obj.p_justification.trim()};
+          if(isAdminDecision&&typeof obj.p_justification!=='string'||obj.p_justification.trim().length<10||obj.p_justification.length>1200)throw Error('bad_reason');
+          if(isAdminDecision){
+            rpcBody={p_kind:obj.p_kind,p_id:obj.p_id,p_decision:obj.p_decision,p_justification:obj.p_justification.trim()};
+          }else{
+            if(!Object.keys(obj).every(key=>['p_code','p_price_cents','p_expected_revision','p_reason'].includes(key))
+                ||Object.keys(obj).length!==4)throw Error('unexpected_fields');
+            if(typeof obj.p_code!=='string'||!/^[a-z][a-z0-9_]{2,49}$/.test(obj.p_code))throw Error('code');
+            if(!Number.isSafeInteger(obj.p_price_cents)||obj.p_price_cents<0||obj.p_price_cents>10000000)throw Error('price');
+            if(!Number.isSafeInteger(obj.p_expected_revision)||obj.p_expected_revision<1)throw Error('revision');
+            if(typeof obj.p_reason!=='string'||obj.p_reason.trim().length<10||obj.p_reason.length>500)throw Error('reason');
+            rpcBody={p_code:obj.p_code,p_price_cents:obj.p_price_cents,p_expected_revision:obj.p_expected_revision,p_reason:obj.p_reason.trim()};
+          }
         }catch(_){return respond({error:'invalid_request'},400,origin)}
       }
-      const rpc=isAdminQueue?'frela_admin_queue':'frela_admin_decide';
+      const rpc=isAdminQueue?'frela_admin_queue':isAdminDecision?'frela_admin_decide':isAdminBusiness?'frela_admin_commercial':'frela_admin_change_price';
       try {
         const upstream=await fetch(NEON_DATA_API+'/rpc/'+rpc,{
           method:'POST',
@@ -104,6 +116,8 @@ export default {
         const data=await upstream.json();
         if(!data||typeof data!=='object'||Array.isArray(data))return respond({error:'unexpected_database_response'},502,origin);
         if(isAdminQueue&&(!Array.isArray(data.companies)||!Array.isArray(data.individuals)||!Array.isArray(data.jobs)))return respond({error:'unexpected_database_response'},502,origin);
+        if(isAdminBusiness&&(!data.overview||!Array.isArray(data.offers)||!Array.isArray(data.payingClients)||!Array.isArray(data.advertisers)))return respond({error:'unexpected_database_response'},502,origin);
+        if(isAdminPricing&&data.ok!==true)return respond({error:'unexpected_database_response'},502,origin);
         return respond(data,200,origin);
       }catch(_){return respond({error:'temporarily_unavailable'},502,origin)}
     }
