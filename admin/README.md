@@ -88,6 +88,18 @@ A conta administrativa passou a ter credencial de senha registrada no Neon Auth,
 
 O código temporário de redefinição de senha que apareceu na captura da titular não foi utilizado nem copiado para repositórios ou documentação. **Nenhuma redefinição adicional da senha é necessária por causa deste bug.**
 
+## Correção de HTTP 502 após inclusão do financeiro — 21/11/2026
+
+**Sintoma observado pela titular:** a página administrativa voltou a apresentar o formulário de login com `A operação não foi concluída (HTTP 502)` após receber as novas abas de gestão.
+
+**Investigação:** a função SQL `frela_admin_commercial()` executou com sucesso em um teste transacional de identidade administrativa simulada na branch `authorization-tests`, retornando as seis ofertas e totais de pagamentos vazios. A documentação oficial do Neon confirma que adicionar RPCs exige atualização manual do **cache do esquema da Data API**.
+
+**Correção aplicada:** atualização do cache da Neon Data API na branch `development-rls` usando a operação de refresh da configuração, sem alterar seus parâmetros de segurança.
+
+**Resiliência do frontend:** a função `refresh()` deixou de exigir simultaneamente as respostas de moderação e de finanças. Usa `Promise.allSettled`, mantém a sessão e mostra o módulo disponível se o outro falhar. Indicadores impossíveis de consultar mostram **“—”**, nunca falsos zeros. A interface apresenta alerta para o módulo temporariamente indisponível. Testes simulados confirmaram os estados de falha separadamente e sucesso conjunto. [Teste de regressão](../tests/admin-resilience.mjs).
+
+**Limite da confirmação:** o acesso HTTP real à rota `workers.dev` não foi possível por meio das ferramentas externas desta sessão. Ainda é preciso a titular atualizar a página do painel e confirmar que a aba comercial abre no Chrome iPhone.
+
 ## Limitações registradas
 
 - **Ainda não foi confirmada uma sessão administrativa funcional por e-mail e senha no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
