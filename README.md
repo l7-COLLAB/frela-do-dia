@@ -64,7 +64,7 @@ Acesse **https://frela-do-dia.l7526080.workers.dev/painel/**. O Worker público 
 
 O formulário usa **Neon Auth**, e a API da Cloudflare consulta o Neon com JWT. A autorização administrativa depende de uma allowlist privada. **Uma conta de desenvolvimento está previamente autorizada**. A entrada principal agora utiliza **e-mail e senha**; para a primeira senha, o titular pode solicitar um **código OTP** no próprio painel. O JWT continua obrigatório para acessar dados. A [migração 0007](database/migrations/0007_admin_dashboard_access.sql) foi executada **somente em `development-rls`**, e os testes simulados negaram acesso a usuários comuns e comprovaram uma aprovação auditada com rollback. Há uma conta administrativa de homologação criada; inscrições públicas, vagas e contratações reais continuam desativadas.
 
-A Cloudflare confirmou o deployment dos dois Workers e habilitação dos subdomínios, mas não foi possível verificar diretamente a resposta HTTP externa desta sessão. O login com JWT real ainda precisa ser homologado. [Instruções e limitações](admin/README.md).
+A Cloudflare confirmou o deployment dos dois Workers e habilitação dos subdomínios, mas não foi possível verificar diretamente a resposta HTTP externa desta sessão. A titular confirmou acesso administrativo pelo iPhone; as novas áreas comerciais e fluxos de edição de preços ainda precisam de teste ponta a ponta. [Instruções e limitações](admin/README.md).
 
 ## Moderação e contratação — banco de desenvolvimento
 
