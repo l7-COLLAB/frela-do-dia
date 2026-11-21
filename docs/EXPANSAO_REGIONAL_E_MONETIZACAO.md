@@ -13,6 +13,8 @@ Pesquisa de referência (novembro/2026):
 - ACI Ijuí: https://aciijui.com.br/2026/04/17/conecte-divulgue-e-venda-mais-com-a-vitrine-aci/
 - Rua do Comércio Ijuí: https://ruadocomercioijui.com.br/
 
+> **Atualização técnica de 21/11/2026:** os seis produtos pagos abaixo foram cadastrados como preços iniciais de teste no Neon `development-rls`, editáveis no painel administrativo. Os valores continuam rascunhos. Não existe checkout ativo nem clientes pagantes registrados. A receita é computada somente a partir de futuros recebimentos confirmados, sem dados fictícios. [Painel comercial](PAINEL_COMERCIAL.md).
+
 ## Proposta comercial: preços de teste (não são preços validados)
 
 | Produto | Preço sugerido | Entrega inicial |
