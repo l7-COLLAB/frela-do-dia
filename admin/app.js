@@ -257,22 +257,64 @@ function renderHistory(){
  }
 }
 
+function clearCommercialView(){
+ const unavailable='—';
+ for(const id of ['overviewCompanies','overviewPeople','overviewWorkers','overviewJobs',
+   'overviewPaying','overviewRevenue','billingCustomers','billingOrders','billingRevenue']){
+   $(id).textContent=unavailable;
+ }
+ $('billingNotice').textContent='O serviço financeiro está temporariamente indisponível. Nenhuma cobrança foi efetuada por esta tela.';
+ for(const [container,message] of [
+   ['advertiserItems','Não foi possível atualizar a lista de anunciantes.'],
+   ['offerItems','Pacotes indisponíveis no momento. Nenhum preço foi alterado.'],
+   ['payingClientItems','Não foi possível consultar os clientes pagantes.'],
+   ['paymentItems','Não foi possível consultar os recebimentos.'],
+   ['historyItems','Não foi possível consultar o histórico de preços.']
+ ])blankList(container,message);
+}
+function clearModerationView(){
+ for(const id of ['countCompanies','countIndividuals','countJobs'])$(id).textContent='—';
+ blankList('items','A moderação está temporariamente indisponível.');
+}
 async function refresh(){
  if(!user)return;
  setBusy(true);
  try{
-  const [data,business]=await Promise.all([
+  // Cada módulo carrega de modo independente; uma falha financeira não
+  // invalida a sessão, nem oculta as funções de moderação disponíveis.
+  const [moderationResult,businessResult]=await Promise.allSettled([
    callApi('/v1/admin/queue'),
    callApi('/v1/admin/business')
   ]);
-  if(!data||!Array.isArray(data.companies)||!Array.isArray(data.individuals)||!Array.isArray(data.jobs))
-    throw new Error('O servidor não devolveu a fila de moderação esperada.');
-  if(!business||!business.overview||!Array.isArray(business.offers)||!Array.isArray(business.advertisers))
-    throw new Error('O servidor não devolveu o relatório comercial esperado.');
-  queue=data;commercial=business;showSession(user);render();renderCommercial();switchSection(currentSection);
-  status('Dados administrativos atualizados. Os valores são de desenvolvimento.');
+  const moderation=moderationResult.status==='fulfilled'?moderationResult.value:null;
+  const business=businessResult.status==='fulfilled'?businessResult.value:null;
+  const moderationValid=moderation&&Array.isArray(moderation.companies)
+    &&Array.isArray(moderation.individuals)&&Array.isArray(moderation.jobs);
+  const businessValid=business&&business.overview&&Array.isArray(business.offers)
+    &&Array.isArray(business.advertisers)&&Array.isArray(business.payingClients);
+
+  if(!moderationValid&&!businessValid){
+   const firstError=moderationResult.status==='rejected'
+    ?moderationResult.reason:businessResult.status==='rejected'
+    ?businessResult.reason:new Error('Os serviços administrativos não responderam.');
+   throw firstError;
+  }
+
+  queue=moderationValid?moderation:null;
+  commercial=businessValid?business:null;
+  showSession(user);
+  if(queue)render();else clearModerationView();
+  if(commercial)renderCommercial();else clearCommercialView();
+  if(queue&&!commercial)$('overviewPending').textContent=
+    'O módulo financeiro está indisponível. A moderação continua funcionando.';
+  if(!queue&&commercial)$('overviewPending').textContent=
+    'A fila de moderação está indisponível. Os dados comerciais continuam acessíveis.';
+  switchSection(currentSection);
+  if(queue&&commercial)status('Dados administrativos atualizados. Ambiente de desenvolvimento.');
+  else status('Acesso mantido. Um dos módulos está temporariamente indisponível. Tente atualizar os dados.',true);
  }catch(e){
-  queue=null;$('dashboard').hidden=true;$('loginPanel').hidden=false;
+  // Somente ocultar as áreas se AMBOS os serviços administrativos falharem.
+  queue=null;commercial=null;$('dashboard').hidden=true;$('loginPanel').hidden=false;
   $('logoutInLogin').hidden=false;
   $('retryAccess').hidden=false;
   status(e.message||'Não foi possível carregar a administração.',true);
@@ -414,10 +456,10 @@ $('retryAccess').addEventListener('click',async()=>{
  await initialize();
 });
 for(const btn of document.querySelectorAll('[data-section]'))btn.addEventListener('click',()=>{
- if(queue&&commercial)switchSection(btn.dataset.section);
+ if(queue||commercial)switchSection(btn.dataset.section);
 });
 for(const btn of document.querySelectorAll('[data-go]'))btn.addEventListener('click',()=>{
- if(queue&&commercial)switchSection(btn.dataset.go);
+ if(queue||commercial)switchSection(btn.dataset.go);
 });
 $('advertiserFilter').addEventListener('change',()=>{if(commercial)renderAdvertisers()});
 for(const btn of document.querySelectorAll('[data-tab]'))btn.addEventListener('click',()=>{
