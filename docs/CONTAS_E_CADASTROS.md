@@ -37,6 +37,12 @@ Worker: `frela-do-dia-api-dev`, autenticado por JWT do Neon.
 
 Migração [0009_account_onboarding.sql](../database/migrations/0009_account_onboarding.sql). Teste reversível [verify_account_onboarding.sql](../database/tests/verify_account_onboarding.sql). Testes automatizados [account-onboarding.mjs](../tests/account-onboarding.mjs).
 
+## Criação de conta e verificação de e-mail — preparada, não liberada
+
+O frontend contém o fluxo futuro `signUp.email({name,email,password})` e a confirmação de e-mail com `emailOtp.verifyEmail({email,otp})`. O formulário só é mostrado se as duas condições explícitas `PUBLIC_SIGNUPS_OPEN` e `LEGAL_DOCUMENTS_READY` estiverem habilitadas.
+
+No código atual **as duas estão `false`**, o botão permanece desabilitado e o Neon Auth continua com `allow_sign_up=false`, independentemente de alguém manipular a interface no navegador. Antes da liberação deverão existir termos e política de privacidade e novos testes reais de segurança/antifraude. Não alterar os flags isoladamente como substituto da configuração do servidor.
+
 ## Verificações concluídas
 
 - [x] Migração aplicada primeiro na branch isolada `authorization-tests`, depois em `development-rls`.
