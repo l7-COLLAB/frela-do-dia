@@ -1,6 +1,6 @@
 # Neon — configuração e implantação do Frela do Dia
 
-**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0005 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
+**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0006 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
 
 ## Arquitetura
 
@@ -41,10 +41,13 @@ Executar na ordem, separadamente, após fazer uma branch de teste:
 3. [0003_neon_auth_rls_bridge.sql](../database/migrations/0003_neon_auth_rls_bridge.sql): função intermediária e políticas ajustadas ao esquema gerenciado `auth` do Neon. **É indispensável nesta configuração**: o papel `authenticated` não tem acesso direto ao schema `auth` administrado por `cloud_admin`.
 4. [0004_individual_hirers_and_job_types.sql](../database/migrations/0004_individual_hirers_and_job_types.sql): contratantes PF, associação exclusiva PF/PJ, emprego fixo, diárias e lotação.
 5. [0005_individual_hirer_rls.sql](../database/migrations/0005_individual_hirer_rls.sql): políticas RLS de PF e revisão dos acessos a anúncios, candidaturas e contratações.
+6. [0006_private_moderation_and_hiring.sql](../database/migrations/0006_private_moderation_and_hiring.sql): schema `app_private`, funções administrativas de verificação e publicação, seleção de candidatura com limite de vagas e trilha de auditoria.
 
-Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
+Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 → 0006 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
 
 Depois, executar [verify_access.sql](../database/tests/verify_access.sql), [verify_hirer_and_jobs.sql](../database/tests/verify_hirer_and_jobs.sql), [verify_roles_no_jwt.sql](../database/tests/verify_roles_no_jwt.sql) e os testes com JWTs reais emitidos pelo Neon Auth. Os três primeiros testes **passaram** no ambiente de desenvolvimento em 20/11/2026; os testes ponta a ponta com sessões válidas ainda estão pendentes.
+
+Após 0006, executar também [verify_moderation_security.sql](../database/tests/verify_moderation_security.sql). O teste reversível de seleção e moderação está em [verify_moderation_and_slots.sql](../database/tests/verify_moderation_and_slots.sql): passou na branch isolada `authorization-tests` e deixou zero registros fictícios.
 
 ## Testes obrigatórios antes do lançamento
 
@@ -79,12 +82,18 @@ Usar contas de teste independentes: trabalhador A, trabalhador B, empresa A, emp
 A versão atual em `index.html` usa dados fictícios e `localStorage`. Isso foi preservado propositalmente.
 A implementação do login e das chamadas reais será uma etapa posterior ao sucesso dos testes de RLS.
 
+## Moderação administrativa no desenvolvimento
+
+O módulo [MODERACAO_E_OPERACOES.md](MODERACAO_E_OPERACOES.md) descreve a migração 0006. Empresas e pessoas físicas só podem obter estado verificado por decisão administrativa; anúncios pendentes só podem ser publicados após revisão. A função privada de seleção confirma uma candidatura por vez, bloqueia lotação excessiva e fecha o anúncio ao atingir todas as posições.
+
+A trilha `app_private.audit_events` é privada, protegida por RLS, e o schema não está exposto na Data API. Funções administrativas são `SECURITY INVOKER`, sem permissão de EXECUTE para usuários comuns. O backend administrativo futuro deverá autenticar o operador e guardar credenciais em Secrets. **Esse backend ainda não existe** e a API de desenvolvimento continua somente leitura.
+
 ## Decisão de escopo (20/11/2026)
 
 As seis tabelas iniciais tratam de perfis, empresas, vagas, endereços privados, candidaturas e contratações. **Avaliações, notas e contestações de pagamento não serão criadas nesta fase.** Nenhuma migração posterior de disputa deve ser executada sem nova aprovação e revisão de segurança.
 
 ## Autenticação no frontend (homologação, não em produção)
 
-O diretório [auth-preview](../auth-preview/README.md) contém a primeira integração com o SDK Neon Auth: login, sessão, logout e consulta ao próprio perfil com JWT. Para executar, usar Node.js, `npm install` e variáveis públicas `VITE_NEON_AUTH_URL` / `VITE_NEON_DATA_API_URL` específicas da branch `development-rls`.
+O diretório [auth-preview](../auth-preview/README.md) contém a primeira integração com o SDK Neon Auth: login, sessão, logout e consulta ao próprio perfil com JWT. Para executar, usar Node.js, `npm install` e variáveis públicas `VITE_NEON_AUTH_URL` / `VITE_FRELA_API_URL` específicas da branch `development-rls`.
 
 A configuração do desenvolvimento mantém **novas inscrições desativadas**, exige confirmação de e-mail e restringe origens da Data API ao site conhecido e a `http://localhost:5173`. Não publicar esse módulo no site principal antes de homologar autenticação, segurança, regras de moderação e requisitos LGPD. Nenhuma senha ou segredo está versionado.
