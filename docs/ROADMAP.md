@@ -48,6 +48,10 @@
 - [ ] Executar testes reais com contas e JWTs distintos (pendente)
 - [ ] Definir arquitetura e ambiente separados dos outros projetos
 - [x] Preparar módulo de login Neon Auth em diretório de homologação no GitHub
+- [x] Preparar API Cloudflare de desenvolvimento somente leitura, com JWT obrigatório nas rotas privadas
+- [x] Conectar código do login de homologação à API Cloudflare (sem publicar o login público)
+- [x] Executar matriz de RLS com identidades simuladas, em transação reversível
+- [ ] Testar endpoints da API Cloudflare por HTTP externo e autenticação com JWT válido
 - [ ] Publicar, testar e integrar login à interface principal
 - [ ] Homologar banco, autenticação e RLS antes de abrir cadastros
 - [ ] Cadastro e verificação de empresas/contratantes
