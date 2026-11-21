@@ -42,6 +42,12 @@ Todas as extensões que tratam de dados pessoais dependerão de autenticação, 
 
 Detalhes, ordem de implementação, termos de segurança e referências: [EXPANSAO_REGIONAL_E_MONETIZACAO.md](EXPANSAO_REGIONAL_E_MONETIZACAO.md).
 
+## Estado da interface demonstrativa — 20/11/2026
+
+A tela de anúncio já permite simular escolha de **pessoa física** ou **empresa**, bem como **serviço pontual, diária/temporário ou emprego fixo**. O painel do contratante permite marcar posições preenchidas, encerrar vagas e duplicar anúncios com confirmação de novos dados. A agenda pode guardar compromissos **apenas no aparelho**.
+
+**Isso não corresponde a contas ou processos reais.** Até conectar o Neon e validar as políticas de autorização, não há autenticação, moderação operacional, candidaturas, cobrança ou sincronização entre dispositivos. Chat, notificações push e mural comercial continuam planejados.
+
 ## Avaliações e contestações: adiadas
 As notas bilaterais e a contestação de falta de pagamento **não serão oferecidas no lançamento inicial**. A proposta foi preservada em [funcionalidades futuras](FUTURE_REVIEWS.md). O MVP não publicará acusações, reputações nem mensagens de disputa.
 
