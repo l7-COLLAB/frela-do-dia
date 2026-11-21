@@ -83,16 +83,14 @@ signInForm.addEventListener('submit', async (event) => {
 checkButton.addEventListener('click', async () => {
   if (!auth || !activeUser) return;
   if (!apiUrl || /SUA-BRANCH/.test(apiUrl)) {
-    report('Configure VITE_NEON_DATA_API_URL para testar a leitura de dados.', true);
+    report('Configure VITE_FRELA_API_URL para testar a leitura protegida de dados.', true);
     return;
   }
   busy(true);
   try {
     const { data, error } = await auth.token();
     if (error || !data?.token) throw new Error('Não foi possível obter um token de sessão válido.');
-    const url = new URL(apiUrl.replace(/\/$/, '') + '/worker_profiles');
-    url.searchParams.set('select', 'user_id,display_name,city');
-    url.searchParams.set('limit', '1');
+    const url = new URL(apiUrl.replace(/\/$/, '') + '/v1/me/worker');
     const response = await fetch(url, {
       headers: {
         Authorization: 'Bearer ' + data.token,
@@ -103,11 +101,11 @@ checkButton.addEventListener('click', async () => {
     });
     const payload = await response.json();
     if (!response.ok) throw new Error('Consulta bloqueada: HTTP ' + response.status);
-    if (!Array.isArray(payload)) throw new Error('Resposta inesperada da API.');
-    // Não imprime conteúdo do token nem dados de terceiros.
-    const own = payload.filter((row) => row.user_id === activeUser.id);
-    if (payload.length !== own.length) throw new Error('RLS inconsistente: registro de outro usuário retornado.');
-    report(own.length ? 'Seu próprio perfil está acessível pela RLS.' : 'Consulta autorizada. Você ainda não tem perfil criado.');
+    if (!Array.isArray(payload?.items)) throw new Error('Resposta inesperada da API.');
+    // Confere defensivamente os IDs recebidos; a proteção principal é a RLS do Neon.
+    const own = payload.items.filter((row) => row.user_id === activeUser.id);
+    if (payload.items.length !== own.length) throw new Error('RLS inconsistente: registro de outro usuário retornado.');
+    report(own.length ? 'Seu próprio perfil está acessível pela RLS.' : 'Consulta autorizada pelo backend. Você ainda não tem perfil criado.');
   } catch (error) {
     report('Falha no teste de acesso: ' + (error.message || 'erro desconhecido'), true);
   } finally {
