@@ -1,6 +1,7 @@
-// Frela do Dia — API de desenvolvimento, somente leitura.
-// NÃO usa conexão privilegiada. O Neon Data API valida JWTs e aplica RLS.
-// NÃO publicar alterações administrativas neste Worker sem revisão de segurança.
+// Frela do Dia — API de desenvolvimento: consultas + decisões administrativas.
+ // Não usa conexão privilegiada. A Neon Data API autentica JWTs e as RPCs
+ // verificam identidade na allowlist app_private.admin_operators (vazia inicialmente).
+ // Não há endpoints públicos de escrita nem cadastro.
 const NEON_DATA_API = 'https://ep-plain-mountain-bcbr91e0.apirest.c-16.us-east-1.aws.neon.tech/frela_do_dia/rest/v1';
 const ALLOWED_ORIGINS = new Set([
   'http://localhost:5173',
@@ -38,7 +39,7 @@ function cors(origin) {
   };
   if (origin && ALLOWED_ORIGINS.has(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
-    headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
     headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type';
     headers['Access-Control-Max-Age'] = '600';
   }
@@ -54,13 +55,59 @@ export default {
     const originAllowed=!origin||ALLOWED_ORIGINS.has(origin);
     if(!originAllowed) return respond({error:'origin_not_allowed'},403);
     if(request.method==='OPTIONS'){
-      if(!ROUTES[url.pathname]&&url.pathname!=='/health')return respond({error:'not_found'},404,origin);
+      if(!ROUTES[url.pathname]&&url.pathname!=='/health'&&url.pathname!=='/v1/admin/queue'&&url.pathname!=='/v1/admin/decision')return respond({error:'not_found'},404,origin);
       return new Response(null,{status:204,headers:cors(origin)});
     }
-    if(request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
-    if(url.pathname==='/health'){
-      return respond({service:'frela-do-dia-api-dev',status:'ok',environment:'development',writable:false},200,origin);
+    if(url.pathname==='/health'&&request.method==='GET'){
+      return respond({service:'frela-do-dia-api-dev',status:'ok',environment:'development',publicWrites:false,adminRequiresAuthorization:true},200,origin);
     }
+    const isAdminQueue=url.pathname==='/v1/admin/queue';
+    const isAdminDecision=url.pathname==='/v1/admin/decision';
+    if(isAdminQueue||isAdminDecision){
+      if(isAdminQueue&&request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
+      if(isAdminDecision&&request.method!=='POST')return respond({error:'method_not_allowed'},405,origin);
+      const token=request.headers.get('Authorization')||'';
+      if(!/^Bearer [^\\s]+$/.test(token)||token.length<40||token.length>8192)
+        return respond({error:'authentication_required'},401,origin);
+      let rpcBody={};
+      if(isAdminDecision){
+        const len=Number(request.headers.get('Content-Length')||0);
+        if(len>3200)return respond({error:'payload_too_large'},413,origin);
+        try {
+          const raw=await request.text();
+          if(raw.length>3200) return respond({error:'payload_too_large'},413,origin);
+          const obj=JSON.parse(raw);
+          if(!obj||Array.isArray(obj)||typeof obj!=='object')throw Error('bad_json');
+          if(Object.keys(obj).sort().join(',')!=='p_decision,p_id,p_justification,p_kind')throw Error('unexpected_fields');
+          if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(obj.p_id||''))throw Error('bad_id');
+          if(!['company','individual_hirer','job_posting'].includes(obj.p_kind))throw Error('bad_kind');
+          if(!(['company','individual_hirer'].includes(obj.p_kind)?
+                 ['verified','rejected','suspended'].includes(obj.p_decision):
+                 ['published','rejected'].includes(obj.p_decision)))throw Error('bad_decision');
+          if(typeof obj.p_justification!=='string'||obj.p_justification.trim().length<10||obj.p_justification.length>1200)throw Error('bad_reason');
+          rpcBody={p_kind:obj.p_kind,p_id:obj.p_id,p_decision:obj.p_decision,p_justification:obj.p_justification.trim()};
+        }catch(_){return respond({error:'invalid_request'},400,origin)}
+      }
+      const rpc=isAdminQueue?'frela_admin_queue':'frela_admin_decide';
+      try {
+        const upstream=await fetch(NEON_DATA_API+'/rpc/'+rpc,{
+          method:'POST',
+          headers:{'Authorization':token,'Accept':'application/json','Content-Type':'application/json'},
+          body:JSON.stringify(rpcBody),
+          cache:'no-store',
+          signal:AbortSignal.timeout(8000)
+        });
+        if(upstream.status===401)return respond({error:'unauthorized'},401,origin);
+        if(upstream.status===403)return respond({error:'forbidden'},403,origin);
+        if(upstream.status===400||upstream.status===409)return respond({error:'invalid_transition_or_request'},409,origin);
+        if(!upstream.ok)return respond({error:'database_unavailable'},502,origin);
+        const data=await upstream.json();
+        if(!data||typeof data!=='object'||Array.isArray(data))return respond({error:'unexpected_database_response'},502,origin);
+        if(isAdminQueue&&(!Array.isArray(data.companies)||!Array.isArray(data.individuals)||!Array.isArray(data.jobs)))return respond({error:'unexpected_database_response'},502,origin);
+        return respond(data,200,origin);
+      }catch(_){return respond({error:'temporarily_unavailable'},502,origin)}
+    }
+    if(request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
     const route=ROUTES[url.pathname];
     if(!route)return respond({error:'not_found'},404,origin);
     const auth=request.headers.get('Authorization')||'';
