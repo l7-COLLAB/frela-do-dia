@@ -50,6 +50,14 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
+## API Cloudflare de desenvolvimento (somente leitura)
+
+Uma API independente foi implantada na Cloudflare em `frela-do-dia-api-dev`, sem modificar o site principal. O código está em [backend/dev-readonly-worker.js](backend/dev-readonly-worker.js) e a documentação em [backend/README.md](backend/README.md).
+
+A API aceita apenas `GET` em vagas públicas e perfis autorizados. Encaminha tokens de login para a Neon Data API validar e aplicar RLS; não possui senha PostgreSQL nem poderes de publicação. A Cloudflare confirmou upload e subdomínio habilitados, mas **a resposta HTTP do Worker não pôde ser testada externamente** nesta sessão.
+
+O [cliente de homologação](auth-preview/README.md) já aponta para essa API. Testes estáticos e de simulação de HTTP foram adicionados, mas **o login real com JWT válido ainda não foi comprovado**.
+
 ## Autenticação em desenvolvimento
 
 O código do [módulo de login de homologação](auth-preview/README.md) foi preparado com o SDK oficial **Neon Auth**, usando URL de autenticação pública e a Data API da branch de teste. Inclui login por e-mail/senha, restauração de sessão, leitura do próprio perfil com JWT, logout e mensagens de erro.
