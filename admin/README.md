@@ -61,6 +61,19 @@ Após novas tentativas, o navegador interno do Gmail exibiu **“Sessão inváli
 - [ ] A titular definir a primeira senha com OTP real e confirmar acesso no Safari.
 - [ ] Homologar renovação de JWT e resposta dos endpoints administrativos com a sessão por senha.
 
+## Correção do erro "Sessão inválida ou expirada" — 21/11/2026
+
+A conta administrativa passou a ter credencial de senha registrada no Neon Auth, com e-mail verificado e autorização ativa, mas o painel ainda exibia `Sessão inválida ou expirada` após o login. A verificação do Worker de API revelou um defeito na expressão de validação do header Bearer.
+
+- **Antes:** `/^Bearer [^\\\\s]+$/` dentro do JavaScript do Worker. A classe de caracteres incluía um escape incorreto e rejeitava tokens contendo a letra minúscula `s`.
+- **Agora:** `/^Bearer [^\\s]+$/`, aceitando o token JWT codificado sem espaço em branco. A validação criptográfica do token **continua a cargo do Neon Data API**.
+- O Worker `frela-do-dia-api-dev` foi atualizado via Cloudflare API, e uma leitura de confirmação mostrou a nova validação no código publicado.
+- Um teste local de requisição simulada com JWT de exemplo contendo `s` retornou 200 e comprovou o encaminhamento intacto para o RPC; o caso foi acrescentado a `tests/dev-api.mjs`.
+- A interface `admin/app.js` agora diferencia `authentication_required` e `token_rejected_by_neon`, facilitando diagnosticar uma eventual rejeição restante, sem expor tokens no navegador.
+- **Ainda falta** confirmar a entrada real no Chrome ou Safari da titular após a correção; não alegar homologação sem observação real.
+
+O código temporário de redefinição de senha que apareceu na captura da titular não foi utilizado nem copiado para repositórios ou documentação. **Nenhuma redefinição adicional da senha é necessária por causa deste bug.**
+
 ## Limitações registradas
 
 - **Ainda não foi confirmada uma sessão administrativa funcional por e-mail e senha no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
