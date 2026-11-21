@@ -15,7 +15,9 @@ Estado: execução por etapas. NÃO liberar inscrições públicas nem usar dado
 **Critério de aceite:** cadastro e dados persistem entre sessões e dispositivos; acesso cruzado é negado; não há exposição de segredos.
 
 ## Etapa 2 — Categorias, vagas e pesquisa
-- [ ] Criar taxonomia de 16 categorias, profissões e aliases inclusivos, validando atualização no frontend e banco.
+- [x] Atualizar a interface demonstrativa com 16 categorias profissionais e 108 profissões, mantendo anúncios fictícios e cadastro fechado.
+- [ ] Persistir taxonomia estruturada em backend e conectar profissão do perfil/da vaga à API real.
+- [ ] Homologar aliases, filtros e renderização da interface em navegador real.
 - [ ] Ligar publicação real de anúncio aos perfis de empresas/PF verificadas.
 - [ ] Moderação antes da publicação; expiração e encerramento automáticos.
 - [ ] Busca por profissão, modalidade, cidade, turno e remuneração.
@@ -57,3 +59,10 @@ Estado: execução por etapas. NÃO liberar inscrições públicas nem usar dado
 - Desenvolvimento: `br-flat-pine-bcokt9x3` (`development-rls`): 7 tabelas `public` com `rowsecurity=true`, Neon Auth ativo.
 - Produção: `br-raspy-hall-bcdsw4ve` (`production`): sem tabelas de produto e sem Neon Auth.
 - Isto é uma auditoria estrutural; não significa fluxo real de login/candidatura homologado.
+
+## Progresso da etapa 2 — 2026-11-21
+- Interface: 16 categorias adicionadas à navegação de vagas e ao seletor de publicação demonstrativa.
+- Busca textual: inclui nomes de profissões associados às categorias.
+- Compatibilidade: as cinco categorias antigas das vagas fictícias permanecem pesquisáveis por mapeamento.
+- Nenhuma vaga real foi ativada; API de desenvolvimento e branch production inalteradas.
+- GitHub Actions e teste visual precisam ser confirmados antes de homologar esta entrega.
