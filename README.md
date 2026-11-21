@@ -31,6 +31,14 @@ Quando decidir tornar a demonstração pública: abra **Settings → Pages → B
 
 **Nota:** a publicação da demo não transforma o sistema em um serviço real. Dados introduzidos nos formulários ficam apenas no navegador; não há backend e nenhuma vaga é verificada.
 
+## Área de contas — trabalhador, PF e empresa (homologação)
+
+A rota **https://frela-do-dia.l7526080.workers.dev/conta/** foi adicionada ao Worker público, preservando o protótipo inicial. Ela tem login, recuperação por código OTP, consulta e salvamento de perfil de trabalhador e solicitação de cadastro de contratante pessoa física ou empresa.
+
+A [migração 0009](database/migrations/0009_account_onboarding.sql) está aplicada somente no Neon `development-rls`. As quatro RPCs de conta exigem JWT e RLS; um usuário não pode ler ou editar perfis de outro. PF e PJ permanecem em verificação pendente. Os testes de duas identidades fictícias foram executados com rollback; a execução do GitHub Actions passou. [Documentação](docs/CONTAS_E_CADASTROS.md).
+
+**Inscrições públicas continuam DESATIVADAS** (`allow_sign_up=false`), e a página informa a restrição: contas existentes podem testar perfis, mas ainda não é possível abrir cadastro para trabalhadores reais. A branch `production` não recebeu as migrações. Faltam termos/LGPD, testes no navegador e publicação das APIs de vagas/candidaturas.
+
 ## Banco de dados e segurança (Neon — testes configurados)
 
 A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API**, com RLS e um backend seguro na Cloudflare.
@@ -48,8 +56,8 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 - [Teste de negação sem JWT](database/tests/verify_roles_no_jwt.sql)
 - [Auditoria SQL](database/tests/verify_access.sql)
 
-**Migrações 0001 a 0006 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS nas **sete tabelas**, privilégios estruturais, integridade dos anunciantes e negação de acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
-O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
+**Migrações 0001 a 0009 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS nas **sete tabelas**, privilégios estruturais, integridade dos anunciantes e negação de acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
+A página principal ainda mostra oportunidades fictícias; a rota separada `/conta/` já utiliza Neon Auth e perfis salvos no banco de desenvolvimento. Não use informações pessoais reais de terceiros.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
 ## Painel comercial — desenvolvimento
