@@ -64,7 +64,7 @@ try {
   assert.equal(response.status,401);
   assert.equal(outgoing.length,0);
 
-  const token='Bearer '+('a'.repeat(80));
+  const token='Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.signatureWithsValidCharacters';
   response=await api.fetch(new Request(base+'/v1/admin/decision',{
     method:'POST',headers:{Authorization:token,'Content-Type':'application/json'},
     body:JSON.stringify({p_kind:'company',p_id:'00000000-0000-4000-8000-000000000001',p_decision:'published',p_justification:'Esta combinação é inválida'})
@@ -82,6 +82,7 @@ try {
   assert.equal(response.status,200);
   assert.deepEqual((await response.json()).companies,[]);
   assert.match(outgoing[0].url,/rpc\/frela_admin_queue/);
+  assert.equal(outgoing[0].options.headers.Authorization,token,'JWT com letra s deve chegar sem alteração ao Neon');
   assert.equal(outgoing[0].options.method,'POST');
 
   outgoing=[];
