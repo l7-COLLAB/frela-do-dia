@@ -42,13 +42,21 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 - [Ponte de identidade do Neon Auth](database/migrations/0003_neon_auth_rls_bridge.sql)
 - [Contratantes pessoa física e modalidades de vaga](database/migrations/0004_individual_hirers_and_job_types.sql)
 - [RLS de pessoas físicas, vagas e candidaturas](database/migrations/0005_individual_hirer_rls.sql)
+- [Moderação privada auditada e seleção de candidaturas](database/migrations/0006_private_moderation_and_hiring.sql)
+- [Regras administrativas e critérios de homologação](docs/MODERACAO_E_OPERACOES.md)
 - [Teste de integridade PF/PJ](database/tests/verify_hirer_and_jobs.sql)
 - [Teste de negação sem JWT](database/tests/verify_roles_no_jwt.sql)
 - [Auditoria SQL](database/tests/verify_access.sql)
 
-**Migrações 0001 a 0005 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS nas **sete tabelas**, privilégios estruturais, integridade dos anunciantes e negação de acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
+**Migrações 0001 a 0006 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS nas **sete tabelas**, privilégios estruturais, integridade dos anunciantes e negação de acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
+
+## Moderação e contratação — banco de desenvolvimento
+
+Adicionada a camada `app_private` no Neon para verificação de empresas/PF, aprovação de vagas e seleção com limite de posições. **Funções privadas não podem ser chamadas por usuários comuns**. Todos os atos ficam em trilha de auditoria no banco. Os testes confirmaram bloqueio de anúncio não verificado, encerramento após lotação e suspensão de anúncios de contratante suspenso.
+
+**A funcionalidade administrativa ainda não foi ativada no site nem na API pública.** Não há painel administrativo conectado, credenciais de serviço ou usuários de teste com JWT válido. Consulte [documentação de moderação](docs/MODERACAO_E_OPERACOES.md).
 
 ## API Cloudflare de desenvolvimento (somente leitura)
 
