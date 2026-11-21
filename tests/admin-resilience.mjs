@@ -25,12 +25,12 @@ const document={
  querySelectorAll:selector=>selector==='[data-tab]'?tabs:selector==='[data-section]'?sections:[]
 };
 const context=vm.createContext({document,Intl,console,window:{confirm:()=>true},Date});
-vm.runInContext(code+\`
+vm.runInContext(code+`
 globalThis.inject=(operation)=>{
  user={id:'fixture-admin',email:'fixture@example.com'};
  callApi=operation;
 };
-globalThis.runRefresh=refresh;\`,context);
+globalThis.runRefresh=refresh;`,context);
 const queue={companies:[],individuals:[],jobs:[]};
 const commercial={
  overview:{registeredCompanies:2,registeredIndividuals:1,registeredWorkers:4,
@@ -54,7 +54,7 @@ assert.equal(el('countCompanies').textContent,'—');
 context.inject(async path=>path.includes('/queue')?queue:commercial);
 await context.runRefresh();
 assert.equal(el('dashboard').hidden,false);
-assert.equal(el('overviewRevenue').textContent,'R$ 0,00'.replace(' ',' ')===el('overviewRevenue').textContent?'R$ 0,00':el('overviewRevenue').textContent);
+assert.ok(el('overviewRevenue').textContent.includes('0,00'),'Receita zero confirmada deve ser apresentada em BRL');
 assert.match(el('status').textContent,/Dados administrativos atualizados/);
 
 context.inject(async()=>Promise.reject(Error('Ambos indisponíveis')));
