@@ -4,6 +4,10 @@
 // Nenhuma senha, token ou código OTP é armazenado pelo app.
 const AUTH_URL='https://ep-plain-mountain-bcbr91e0.neonauth.c-16.us-east-1.aws.neon.tech/frela_do_dia/auth';
 const API_URL='https://frela-do-dia-api-dev.l7526080.workers.dev';
+// Dois bloqueios independentes: cadastro público só pode abrir após termos,
+// privacidade, antifraude, migração de produção e liberação do Neon Auth.
+const PUBLIC_SIGNUPS_OPEN=false;
+const LEGAL_DOCUMENTS_READY=false;
 const $=id=>document.getElementById(id);
 let auth=null,activeUser=null,account=null,selectedKind='worker',busy=false,lastRecovery=0;
 const accountRoutes={
@@ -169,6 +173,53 @@ async function save(kind,data){
  setBusy(false);
  await refreshAccount();
 }
+// Formulário de inscrição já implementado, mas com dois bloqueios explícitos.
+// Não substituir esta guarda por um botão visual: o Neon também proíbe sign-up.
+let pendingSignupEmail='';
+$('signupForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(!PUBLIC_SIGNUPS_OPEN||!LEGAL_DOCUMENTS_READY||!auth||busy){
+  report('Os cadastros públicos ainda não foram liberados.',true);
+  return;
+ }
+ const name=$('signupName').value.trim();
+ const email=$('signupEmail').value.trim();
+ const password=$('signupPassword').value;
+ if(name.length<2||password.length<12||password!==$('signupConfirm').value){
+  report('Confira o nome e confirme a senha de pelo menos 12 caracteres.',true);
+  return;
+ }
+ setBusy(true);
+ try{
+  const r=await auth.signUp.email({name,email,password});
+  if(r.error)throw new Error(r.error.message||'Não foi possível criar a conta.');
+  pendingSignupEmail=email;
+  $('signupPassword').value='';$('signupConfirm').value='';
+  $('signupForm').hidden=true;$('verifySignupForm').hidden=false;
+  report('Solicitamos a verificação por e-mail. Digite o código recebido para concluir.');
+ }catch(error){report('Cadastro não concluído: '+(error.message||'erro'),true)}
+ finally{$('signupPassword').value='';$('signupConfirm').value='';setBusy(false)}
+});
+$('verifySignupForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(!PUBLIC_SIGNUPS_OPEN||!LEGAL_DOCUMENTS_READY||!auth||busy||!pendingSignupEmail){
+  report('Verificação de novas inscrições indisponível.',true);return;
+ }
+ const otp=$('signupOtp').value.trim();
+ if(!/^[0-9]{6}$/.test(otp)){report('O código precisa ter seis números.',true);return}
+ setBusy(true);
+ try{
+  const r=await auth.emailOtp.verifyEmail({email:pendingSignupEmail,otp});
+  if(r.error)throw new Error(r.error.message||'Código inválido.');
+  $('signupOtp').value='';
+  $('verifySignupForm').hidden=true;$('signupForm').hidden=false;
+  $('signupPanel').hidden=true;
+  $('loginEmail').value=pendingSignupEmail;pendingSignupEmail='';
+  report('E-mail verificado. Agora você pode entrar com sua senha.');
+ }catch(error){report('Não foi possível confirmar o e-mail: '+(error.message||'falha'),true)}
+ finally{setBusy(false)}
+});
+
 $('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();if(busy||!auth)return;
  const email=$('loginEmail').value.trim();
@@ -262,6 +313,16 @@ $('recoveryReset').addEventListener('submit',async event=>{
  finally{$('recoveryPassword').value='';$('recoveryConfirm').value='';setBusy(false)}
 });
 async function initialize(){
+ // O botão permanece desativado enquanto o Neon não permite sign-up.
+ // A interface futura só abrirá com a configuração legal/técnica concluída.
+ if(PUBLIC_SIGNUPS_OPEN&&LEGAL_DOCUMENTS_READY){
+  $('signupLocked').disabled=false;
+  $('signupLocked').removeAttribute('aria-disabled');
+  $('signupLocked').textContent='Criar conta';
+  $('signupLocked').addEventListener('click',()=>{
+   $('signupPanel').hidden=!$('signupPanel').hidden;
+  });
+ }
  try{
   const sdk=await import('https://esm.sh/@neon/auth@0.8.2?bundle');
   if(typeof sdk.createAuthClient!=='function')throw new Error('SDK de autenticação indisponível.');
