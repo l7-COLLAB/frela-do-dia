@@ -13,6 +13,9 @@
 - Perfil profissional demonstrativo, armazenado localmente no dispositivo.
 - Editor de currículo com três apresentações e exportação via impressão/PDF do navegador.
 - Interface mobile-first, adequada para uso no Safari do iPhone.
+- Formulário demonstrativo de contratação para **empresa ou pessoa física**, com serviços pontuais, diárias e empregos fixos.
+- Painel **Meus anúncios**: preencher posições fictícias, encerrar e duplicar uma oportunidade de teste.
+- **Minha agenda**: compromissos locais, sem sincronização nem notificações reais.
 
 ## Como executar
 
