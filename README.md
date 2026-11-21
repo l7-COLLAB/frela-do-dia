@@ -52,6 +52,14 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
+## Painel administrativo no site público (acesso restrito)
+
+Acesse **https://frela-do-dia.l7526080.workers.dev/painel/**. O Worker público agora oferece a página administrativa e seu JavaScript em rotas próprias, sem interferir na demonstração de vagas. Há um link discreto no rodapé do site.
+
+O formulário usa **Neon Auth**, e a API da Cloudflare consulta o Neon com JWT. A autorização administrativa depende de uma allowlist privada e começa **sem nenhuma conta habilitada**. A [migração 0007](database/migrations/0007_admin_dashboard_access.sql) foi executada **somente em `development-rls`**, e os testes simulados negaram acesso a usuários comuns e comprovaram uma aprovação auditada com rollback. Não há conta administrativa real, inscrições, vagas ou contratações reais habilitadas.
+
+A Cloudflare confirmou o deployment dos dois Workers e habilitação dos subdomínios, mas não foi possível verificar diretamente a resposta HTTP externa desta sessão. O login com JWT real ainda precisa ser homologado. [Instruções e limitações](admin/README.md).
+
 ## Moderação e contratação — banco de desenvolvimento
 
 Adicionada a camada `app_private` no Neon para verificação de empresas/PF, aprovação de vagas e seleção com limite de posições. **Funções privadas não podem ser chamadas por usuários comuns**. Todos os atos ficam em trilha de auditoria no banco. Os testes confirmaram bloqueio de anúncio não verificado, encerramento após lotação e suspensão de anúncios de contratante suspenso.
