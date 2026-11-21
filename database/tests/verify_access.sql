@@ -9,7 +9,7 @@ BEGIN
 
   FOREACH target IN ARRAY ARRAY[
     'worker_profiles','companies','job_postings',
-    'job_private_locations','applications','engagements'
+    'job_private_locations','applications','engagements','individual_hirers'
   ]
   LOOP
     IF NOT EXISTS (
@@ -28,6 +28,7 @@ BEGIN
     OR has_table_privilege('anonymous', 'public.applications', 'SELECT')
     OR has_table_privilege('anonymous', 'public.engagements', 'SELECT')
     OR has_table_privilege('anonymous', 'public.job_private_locations', 'SELECT')
+    OR has_table_privilege('anonymous', 'public.individual_hirers', 'SELECT')
   THEN
     RAISE EXCEPTION 'Um papel anônimo recebeu acesso direto a dados privados';
   END IF;
@@ -40,6 +41,7 @@ BEGIN
     OR has_table_privilege('authenticated', 'public.engagements', 'UPDATE')
     OR has_table_privilege('authenticated', 'public.companies', 'UPDATE')
     OR has_table_privilege('authenticated', 'public.job_postings', 'UPDATE')
+    OR has_table_privilege('authenticated', 'public.individual_hirers', 'UPDATE')
   THEN
     RAISE EXCEPTION 'Papel autenticado possui privilégio administrativo indevido';
   END IF;
@@ -55,6 +57,18 @@ BEGIN
            OR COALESCE(with_check,'') LIKE '%auth.user_id()%')) <> 0
   THEN
     RAISE EXCEPTION 'Políticas RLS ainda dependem diretamente do schema auth';
+  END IF;
+
+  IF (SELECT count(*) FROM pg_policies WHERE schemaname='public' AND tablename='individual_hirers') <> 2 THEN
+    RAISE EXCEPTION 'Políticas de PF ausentes ou inesperadas';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname='job_postings_exactly_one_hirer'
+      AND conrelid='public.job_postings'::regclass
+  ) THEN
+    RAISE EXCEPTION 'Restrição de apenas um anunciante por vaga ausente';
   END IF;
 
   RAISE NOTICE 'Verificações estruturais RLS concluídas. Testar tokens reais separadamente.';
