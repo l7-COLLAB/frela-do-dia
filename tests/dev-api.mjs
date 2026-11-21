@@ -14,7 +14,8 @@ try {
   assert.equal(response.status,200);
   let data=await response.json();
   assert.equal(data.environment,'development');
-  assert.equal(data.writable,false);
+  assert.equal(data.publicWrites,false);
+  assert.equal(data.adminRequiresAuthorization,true);
   assert.equal(outgoing.length,0);
 
   response=await api.fetch(new Request(base+'/v1/jobs'));
@@ -50,6 +51,47 @@ try {
 
   response=await api.fetch(new Request(base+'/v1/jobs',{method:'POST'}));
   assert.equal(response.status,405);
+
+
+  // Admin sem JWT não pode consultar nem decidir.
+  outgoing=[];
+  response=await api.fetch(new Request(base+'/v1/admin/queue'));
+  assert.equal(response.status,401);
+  response=await api.fetch(new Request(base+'/v1/admin/decision',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({p_kind:'company',p_id:'00000000-0000-4000-8000-000000000001',p_decision:'verified',p_justification:'Verificação administrativa'})
+  }));
+  assert.equal(response.status,401);
+  assert.equal(outgoing.length,0);
+
+  const token='Bearer '+('a'.repeat(80));
+  response=await api.fetch(new Request(base+'/v1/admin/decision',{
+    method:'POST',headers:{Authorization:token,'Content-Type':'application/json'},
+    body:JSON.stringify({p_kind:'company',p_id:'00000000-0000-4000-8000-000000000001',p_decision:'published',p_justification:'Esta combinação é inválida'})
+  }));
+  assert.equal(response.status,400);
+  assert.equal(outgoing.length,0);
+
+  globalThis.fetch=async(url,options={})=>{
+    outgoing.push({url:String(url),options});
+    if(String(url).includes('frela_admin_queue'))return Response.json({companies:[],individuals:[],jobs:[]});
+    return Response.json({ok:true,kind:'company',decision:'verified'});
+  };
+  outgoing=[];
+  response=await api.fetch(new Request(base+'/v1/admin/queue',{headers:{Authorization:token}}));
+  assert.equal(response.status,200);
+  assert.deepEqual((await response.json()).companies,[]);
+  assert.match(outgoing[0].url,/rpc\/frela_admin_queue/);
+  assert.equal(outgoing[0].options.method,'POST');
+
+  outgoing=[];
+  response=await api.fetch(new Request(base+'/v1/admin/decision',{
+    method:'POST',headers:{Authorization:token,'Content-Type':'application/json',Origin:'https://frela-do-dia.l7526080.workers.dev'},
+    body:JSON.stringify({p_kind:'company',p_id:'00000000-0000-4000-8000-000000000001',p_decision:'verified',p_justification:'Documentação conferida para cadastro'})
+  }));
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).ok,true);
+  assert.match(outgoing[0].url,/rpc\/frela_admin_decide/);
 
   response=await api.fetch(new Request(base+'/v1/unknown'));
   assert.equal(response.status,404);
