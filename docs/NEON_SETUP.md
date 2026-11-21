@@ -1,6 +1,6 @@
 # Neon — configuração e implantação do Frela do Dia
 
-**Status:** migrações propostas, ainda NÃO executadas no banco. Site público continua como demonstração.
+**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001, 0002 e 0003 aplicadas**. As seis tabelas do MVP estão com RLS habilitada. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
 
 ## Arquitetura
 
@@ -14,11 +14,11 @@ Apenas URLs públicas de serviço e configurações publicáveis podem ir ao fro
 
 ## Pré-requisitos
 
-1. Criar o projeto separado `frela-do-dia` em https://console.neon.tech/ (plano Free).
-2. Selecionar a região disponível mais próxima dos usuários brasileiros.
-3. Habilitar **Managed Neon Auth** e **Data API** no projeto e criar uma branch de teste.
-4. Confirmar os papéis PostgreSQL `anonymous`, `authenticated` e a função `auth.user_id()`; não usar o SQL se a configuração de identidade for diferente.
-5. Usar o console SQL com conexão administrativa **somente na branch de teste**.
+1. [Concluído em teste] Criar o projeto separado `frela-do-dia` em https://console.neon.tech/ (plano Free).
+2. [Concluído] Região `aws-us-east-1` (Virginia), selecionada para viabilizar Functions e Storage, sujeitos à disponibilidade e cotas do plano.
+3. [Concluído na branch de testes] Habilitar **Managed Neon Auth** e **Data API**; por segurança, cadastro público **desativado**, exigência de verificação de e-mail ativada.
+4. [Concluído] Confirmar os papéis PostgreSQL `anonymous`, `authenticated` e a função `auth.user_id()`; não usar o SQL se a configuração de identidade for diferente.
+5. [Concluído] Aplicar e verificar as migrações **somente na branch de teste**.
 
 ### Verificação de pré-requisitos
 
@@ -38,8 +38,9 @@ Executar na ordem, separadamente, após fazer uma branch de teste:
 
 1. [0001_initial_schema.sql](../database/migrations/0001_initial_schema.sql): tabelas, chaves, restrições, RLS ligada e permissões fechadas por padrão.
 2. [0002_rls_policies.sql](../database/migrations/0002_rls_policies.sql): permissões por usuário e regras de visibilidade.
+3. [0003_neon_auth_rls_bridge.sql](../database/migrations/0003_neon_auth_rls_bridge.sql): função intermediária e políticas ajustadas ao esquema gerenciado `auth` do Neon. **É indispensável nesta configuração**: o papel `authenticated` não tem acesso direto ao schema `auth` administrado por `cloud_admin`.
 
-Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Nunca aplicar 0001 sem 0002 em um banco já aberto ao público.** Ainda que 0001 bloqueie o acesso, o produto ficará inoperante até configurar as políticas.
+Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
 
 Depois, executar [verify_access.sql](../database/tests/verify_access.sql) e os testes com usuários reais de teste.
 
