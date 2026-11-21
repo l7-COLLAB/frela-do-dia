@@ -126,28 +126,117 @@ async function initialize(){
   else{showLogin();status('Entre com uma conta administrativa previamente habilitada.');}
  }catch(e){showLogin();status('Não foi possível inicializar o Neon Auth: '+(e.message||'erro de conexão'),true)}
 }
-let lastMagicRequestAt=0;
+// Autenticação por e-mail e senha; criação de contas permanece desativada.
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!auth||busy)return;
- const email=$('email').value.trim();
- if(!email||!$('email').checkValidity())return;
- if(Date.now()-lastMagicRequestAt<60000){
-  status('Já solicitamos um link recentemente. Confira seu e-mail antes de tentar novamente.');
+ const email=$('email').value.trim(),password=$('password').value;
+ if(!email||!$('email').checkValidity()||!password)return;
+ setBusy(true);
+ try{
+  const result=await auth.signIn.email({email,password});
+  if(result.error)throw new Error(result.error.message||'Não foi possível entrar.');
+  $('password').value='';
+  const session=await auth.getSession();
+  if(session.error||!session.data?.user)throw new Error('Senha aceita, mas a sessão não pôde ser confirmada. Tente abrir o painel no Safari.');
+  user=session.data.user;
+  await refresh();
+ }catch(e){
+  status('Login não concluído: '+(e.message||'Verifique e-mail e senha.'),true);
+ }finally{
+  $('password').value='';
+  setBusy(false);
+ }
+});
+
+// Recuperação e definição de primeira senha por código enviado ao próprio e-mail.
+// Nada é enviado ao backend do Frela do Dia: o Neon Auth verifica o código
+// e armazena somente o hash da senha.
+let lastRecoveryRequest=0;
+$('toggleRecovery').addEventListener('click',()=>{
+ const panel=$('recoveryPanel');
+ panel.hidden=!panel.hidden;
+ $('toggleRecovery').setAttribute('aria-expanded',String(!panel.hidden));
+ if(!panel.hidden){
+  $('recoveryEmail').value=$('email').value.trim();
+  $('recoveryEmail').focus();
+ }
+});
+$('requestRecoveryForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!auth||busy)return;
+ const email=$('recoveryEmail').value.trim();
+ if(!email||!$('recoveryEmail').checkValidity())return;
+ if(Date.now()-lastRecoveryRequest<60000){
+  status('Confira seu e-mail. Aguarde um minuto antes de solicitar outro código.');
   return;
  }
  setBusy(true);
  try{
-  const callbackURL=new URL('/painel/',window.location.origin).toString();
-  const r=await auth.signIn.magicLink({email,callbackURL});
-  if(r.error)throw new Error(r.error.message||'Não foi possível solicitar um link.');
-  lastMagicRequestAt=Date.now();
-  status('Se o e-mail estiver autorizado, você receberá um link válido por 10 minutos. Abra a mensagem para continuar.');
- }catch(e){status('Solicitação não concluída: '+(e.message||'erro de conexão'),true)}
- finally{setBusy(false)}
+  if(typeof auth.forgetPassword?.emailOtp!=='function'){
+   throw new Error('A versão atual do módulo de autenticação não permite solicitar o código. Atualize a página.');
+  }
+  const result=await auth.forgetPassword.emailOtp({email});
+  if(result.error)throw new Error(result.error.message||'O código não pôde ser solicitado.');
+  lastRecoveryRequest=Date.now();
+  $('requestRecoveryForm').hidden=true;
+  $('resetPasswordForm').hidden=false;
+  $('recoveryOtp').value='';
+  $('newPassword').value='';
+  $('confirmPassword').value='';
+  status('Se a conta existir, enviaremos um código de verificação ao e-mail. Digite-o abaixo para definir sua senha.');
+ }catch(err){
+  status('Não foi possível solicitar o código: '+(err.message||'erro de conexão'),true);
+ }finally{setBusy(false)}
+});
+$('backToRecovery').addEventListener('click',()=>{
+ $('resetPasswordForm').hidden=true;
+ $('requestRecoveryForm').hidden=false;
+ $('recoveryOtp').value='';
+ $('newPassword').value='';
+ $('confirmPassword').value='';
+ status('Você pode solicitar um novo código de verificação.');
+});
+$('resetPasswordForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!auth||busy)return;
+ const email=$('recoveryEmail').value.trim();
+ const otp=$('recoveryOtp').value.trim();
+ const password=$('newPassword').value;
+ const confirmation=$('confirmPassword').value;
+ if(!/^\\d{6}$/.test(otp)){
+  status('Digite os seis números do código recebido por e-mail.',true);return;
+ }
+ if(password.length<12||password.length>128){
+  status('A senha precisa ter entre 12 e 128 caracteres.',true);return;
+ }
+ if(password!==confirmation){
+  status('As senhas informadas não coincidem.',true);return;
+ }
+ setBusy(true);
+ try{
+  if(typeof auth.emailOtp?.resetPassword!=='function'){
+   throw new Error('A atualização da senha não está disponível nesta versão do módulo.');
+  }
+  const result=await auth.emailOtp.resetPassword({email,otp,password});
+  if(result.error)throw new Error(result.error.message||'O código pode estar incorreto ou expirado.');
+  $('resetPasswordForm').reset();
+  $('password').value='';
+  $('recoveryPanel').hidden=true;
+  $('toggleRecovery').setAttribute('aria-expanded','false');
+  $('requestRecoveryForm').hidden=false;
+  $('resetPasswordForm').hidden=true;
+  $('email').value=email;
+  status('Senha definida. Agora entre com seu e-mail e a nova senha.');
+  $('password').focus();
+ }catch(err){
+  status('Não foi possível definir a senha: '+(err.message||'verifique o código e tente novamente'),true);
+ }finally{
+  $('newPassword').value='';
+  $('confirmPassword').value='';
+  setBusy(false);
+ }
 });
 async function logout(){
  if(!auth)return;
- setBusy(true);try{await auth.signOut();showLogin();status('Sessão encerrada.');}
+ setBusy(true);try{const result=await auth.signOut();if(result?.error)throw new Error(result.error.message||'Erro ao encerrar sessão.');showLogin();$('password').value='';status('Sessão encerrada.');}
  catch(e){status('Não foi possível encerrar a sessão: '+e.message,true)}
  finally{setBusy(false)}
 }
