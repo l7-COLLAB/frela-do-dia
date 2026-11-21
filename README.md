@@ -31,7 +31,7 @@ Quando decidir tornar a demonstração pública: abra **Settings → Pages → B
 
 **Nota:** a publicação da demo não transforma o sistema em um serviço real. Dados introduzidos nos formulários ficam apenas no navegador; não há backend e nenhuma vaga é verificada.
 
-## Banco de dados e segurança (Neon — em preparação)
+## Banco de dados e segurança (Neon — testes configurados)
 
 A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API**, com RLS e um backend seguro na Cloudflare.
 
@@ -39,16 +39,17 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 - [Funcionalidades futuras: avaliações e contestação privada](docs/FUTURE_REVIEWS.md)
 - [Esquema inicial](database/migrations/0001_initial_schema.sql)
 - [Políticas RLS](database/migrations/0002_rls_policies.sql)
+- [Ponte de identidade do Neon Auth](database/migrations/0003_neon_auth_rls_bridge.sql)
 - [Auditoria SQL](database/tests/verify_access.sql)
 
-**As migrações estão versionadas, mas não foram aplicadas a nenhum banco de dados.**
+**Migrações 0001, 0002 e 0003 aplicadas exclusivamente na branch Neon `development-rls` do projeto `frela-do-dia` (20/11/2026).** A branch `production` continua sem o esquema do MVP. Foram validados RLS ligada nas seis tabelas, privilégios estruturais e acesso sem JWT válido. Falta homologar com usuários e tokens reais antes de qualquer publicação.
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
 ## Planejamento de novas funcionalidades
 
 - [Expansão regional, contratação por pessoas físicas, agenda, chat, notificações e monetização](docs/EXPANSAO_REGIONAL_E_MONETIZACAO.md)
-- **Status:** plano documentado, não implementado. O protótipo público continua inalterado.
+- **Status:** parte das interfaces demonstrativas foi implementada, mas funcionalidades reais de login, candidaturas, chat, anúncios pagos e integração Neon continuam pendentes.
 
 ## Roadmap
 
