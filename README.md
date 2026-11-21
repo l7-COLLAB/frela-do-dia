@@ -56,7 +56,7 @@ Executar `node tests/rls-static.mjs` para conferir algumas invariantes do códig
 
 Acesse **https://frela-do-dia.l7526080.workers.dev/painel/**. O Worker público agora oferece a página administrativa e seu JavaScript em rotas próprias, sem interferir na demonstração de vagas. Há um link discreto no rodapé do site.
 
-O formulário usa **Neon Auth**, e a API da Cloudflare consulta o Neon com JWT. A autorização administrativa depende de uma allowlist privada e começa **sem nenhuma conta habilitada**. A [migração 0007](database/migrations/0007_admin_dashboard_access.sql) foi executada **somente em `development-rls`**, e os testes simulados negaram acesso a usuários comuns e comprovaram uma aprovação auditada com rollback. Não há conta administrativa real, inscrições, vagas ou contratações reais habilitadas.
+O formulário usa **Neon Auth**, e a API da Cloudflare consulta o Neon com JWT. A autorização administrativa depende de uma allowlist privada. **Uma conta de desenvolvimento está previamente autorizada**, mas só poderá entrar após comprovar controle do e-mail por Magic Link e obter um JWT válido. A [migração 0007](database/migrations/0007_admin_dashboard_access.sql) foi executada **somente em `development-rls`**, e os testes simulados negaram acesso a usuários comuns e comprovaram uma aprovação auditada com rollback. Há uma conta administrativa de homologação criada; inscrições públicas, vagas e contratações reais continuam desativadas.
 
 A Cloudflare confirmou o deployment dos dois Workers e habilitação dos subdomínios, mas não foi possível verificar diretamente a resposta HTTP externa desta sessão. O login com JWT real ainda precisa ser homologado. [Instruções e limitações](admin/README.md).
 
