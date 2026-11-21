@@ -20,12 +20,14 @@
 - [x] Pesquisar recursos e opções de monetização regional sem modificar a interface pública
 - [x] Demonstrar formulário para empresas e pessoas físicas
 - [x] Criar tabela PF separada e políticas RLS por proprietário no Neon de testes
-- [ ] Implementar verificação de identidade e moderação real para PF e PJ
+- [x] Preparar funções SQL privadas para verificar/suspender contratantes, com auditoria
+- [ ] Implementar identidade do administrador, verificação documental e painel de moderação real para PF e PJ
 - [x] Diferenciar, na interface demonstrativa, emprego fixo, diária e serviço pontual
 - [x] Modelar os três tipos de vaga no Neon de testes, com regras de remuneração
 - [ ] Integrar os três tipos às APIs reais e ao painel administrativo
 - [x] Simular preenchimento de vagas, encerramento manual e expiração por data no navegador
-- [ ] Implementar bloqueio real de candidaturas e lotação em transações seguras
+- [x] Testar operação transacional de seleção e lotação no banco Neon de desenvolvimento
+- [ ] Integrar essa operação à API administrativa com autorização e testes concorrentes
 - [x] Demonstrar duplicação com confirmação de data, horário, remuneração e quantidade, sem copiar candidaturas
 - [ ] Implementar duplicação no backend como novo rascunho sujeito a revisão
 - [x] Demonstrar agenda pessoal com compromissos salvos no aparelho
@@ -57,7 +59,8 @@
 - [ ] Cadastro e verificação de empresas/contratantes
 - [ ] Gestão real de vagas, expiração e moderação
 - [ ] Candidaturas com privacidade e confirmação de envio
-- [ ] Painel administrativo e trilha de auditoria
+- [x] Estruturar trilha de auditoria privada e funções com privilégios restritos no banco de teste
+- [ ] Construir painel administrativo com revisão e registro de decisões
 - [ ] Termos, política de privacidade e controles LGPD
 - [ ] Testes de acessibilidade e fluxos mobile
 
