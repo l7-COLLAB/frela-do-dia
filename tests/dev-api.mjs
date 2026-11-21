@@ -94,6 +94,14 @@ try {
   assert.equal((await response.json()).ok,true);
   assert.match(outgoing[0].url,/rpc\/frela_admin_decide/);
 
+  // A rejeição do token pelo Neon é diferente de sessão ausente no navegador.
+  globalThis.fetch=async()=>new Response(JSON.stringify({error:'invalid_token'}),{
+    status:401,headers:{'Content-Type':'application/json'}
+  });
+  response=await api.fetch(new Request(base+'/v1/admin/queue',{headers:{Authorization:token}}));
+  assert.equal(response.status,401);
+  assert.deepEqual(await response.json(),{error:'token_rejected_by_neon'});
+
   response=await api.fetch(new Request(base+'/v1/unknown'));
   assert.equal(response.status,404);
 
