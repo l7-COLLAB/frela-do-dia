@@ -108,23 +108,28 @@ async function initialize(){
   else{showLogin();status('Entre com uma conta administrativa previamente habilitada.');}
  }catch(e){showLogin();status('Não foi possível inicializar o Neon Auth: '+(e.message||'erro de conexão'),true)}
 }
+let lastMagicRequestAt=0;
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!auth||busy)return;
+ const email=$('email').value.trim();
+ if(!email||!$('email').checkValidity())return;
+ if(Date.now()-lastMagicRequestAt<60000){
+  status('Já solicitamos um link recentemente. Confira seu e-mail antes de tentar novamente.');
+  return;
+ }
  setBusy(true);
  try{
-  const email=$('email').value.trim(),password=$('password').value;
-  const r=await auth.signIn.email({email,password});
-  if(r.error)throw new Error(r.error.message||'Login não autorizado.');
-  const session=await auth.getSession();
-  if(session.error||!session.data?.user)throw new Error('Sessão não pôde ser confirmada.');
-  $('password').value='';user=session.data.user;
-  await refresh();
- }catch(e){status('Login não concluído: '+(e.message||'falha'),true)}
+  const callbackURL=new URL('/painel/',window.location.origin).toString();
+  const r=await auth.signIn.magicLink({email,callbackURL});
+  if(r.error)throw new Error(r.error.message||'Não foi possível solicitar um link.');
+  lastMagicRequestAt=Date.now();
+  status('Se o e-mail estiver autorizado, você receberá um link válido por 10 minutos. Abra a mensagem para continuar.');
+ }catch(e){status('Solicitação não concluída: '+(e.message||'erro de conexão'),true)}
  finally{setBusy(false)}
 });
 async function logout(){
  if(!auth)return;
- setBusy(true);try{await auth.signOut();showLogin();status('Sessão encerrada.');$('password').value=''}
+ setBusy(true);try{await auth.signOut();showLogin();status('Sessão encerrada.');}
  catch(e){status('Não foi possível encerrar a sessão: '+e.message,true)}
  finally{setBusy(false)}
 }
