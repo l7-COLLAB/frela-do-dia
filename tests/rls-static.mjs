@@ -4,6 +4,8 @@ import { strict as assert } from 'node:assert';
 const initial = readFileSync(new URL('../database/migrations/0001_initial_schema.sql', import.meta.url),'utf8');
 const policies = readFileSync(new URL('../database/migrations/0002_rls_policies.sql', import.meta.url),'utf8');
 const identityBridge = readFileSync(new URL('../database/migrations/0003_neon_auth_rls_bridge.sql', import.meta.url),'utf8');
+const hirersMigration = readFileSync(new URL('../database/migrations/0004_individual_hirers_and_job_types.sql', import.meta.url),'utf8');
+const hirersPolicies = readFileSync(new URL('../database/migrations/0005_individual_hirer_rls.sql', import.meta.url),'utf8');
 const verify = readFileSync(new URL('../database/tests/verify_access.sql', import.meta.url),'utf8');
 
 const tables = ['worker_profiles','companies','job_postings','job_private_locations','applications','engagements'];
@@ -33,4 +35,22 @@ assert.match(identityBridge,/ALTER POLICY applications_participants_select/);
 assert.match(identityBridge,/ALTER POLICY engagements_participants_select/);
 assert.doesNotMatch(identityBridge,/DROP TABLE|DROP POLICY|TRUNCATE/i, 'Migração de compatibilidade não pode apagar dados');
 assert.match(verify,/has_function_privilege\('authenticated','public\.frela_auth_user_id\(\)','EXECUTE'\)/);
-console.log('OK: seis tabelas protegidas, permissões básicas verificadas estaticamente. Testes com usuários reais ainda são obrigatórios.');
+
+assert.match(hirersMigration, /CREATE TABLE public\.individual_hirers/);
+assert.match(hirersMigration, /ALTER TABLE public\.individual_hirers ENABLE ROW LEVEL SECURITY/);
+assert.match(hirersMigration, /REVOKE ALL ON TABLE public\.individual_hirers FROM PUBLIC, anonymous, authenticated/);
+assert.match(hirersMigration, /job_postings_exactly_one_hirer/);
+assert.match(hirersMigration, /engagements_exactly_one_hirer/);
+assert.match(hirersMigration, /job_postings_filled_slots_limit/);
+assert.match(hirersMigration, /job_postings_pay_period_matches_type/);
+assert.match(hirersMigration, /engagements_job_individual_fk/);
+assert.match(hirersPolicies, /CREATE POLICY individual_hirers_self_select/);
+assert.match(hirersPolicies, /CREATE POLICY individual_hirers_self_insert/);
+assert.match(hirersPolicies, /ALTER POLICY job_postings_company_submit/);
+assert.match(hirersPolicies, /AND h\.verification_state = 'verified'/);
+assert.match(hirersPolicies, /AND c\.verification_state = 'verified'/);
+assert.match(hirersPolicies, /filled_slots < slots/);
+assert.doesNotMatch(hirersPolicies, /GRANT (?:ALL|UPDATE|DELETE) ON public\.individual_hirers TO authenticated/);
+assert.doesNotMatch(hirersMigration, /\b(?:TRUNCATE|DELETE FROM|DROP TABLE)\b/i);
+console.log('OK: sete tabelas protegidas após 0004/0005, com PF/PJ isolados e limites de vagas. Testes JWT reais continuam pendentes.');
+
