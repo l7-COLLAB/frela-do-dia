@@ -71,6 +71,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
    </form>
   </section>
   <div class="record"><h3>Quero me cadastrar</h3><p>Os formulários e a autenticação já foram preparados. A inscrição pública será aberta após a validação de segurança, termos de uso e privacidade.</p><button id="signupLocked" type="button" class="btn" disabled aria-disabled="true">Cadastro em preparação</button></div>
+  <section id="signupPanel" hidden aria-label="Novo cadastro">
+   <h3>Novo cadastro</h3>
+   <p class="fine">Ativação condicionada à publicação de termos, privacidade e ambiente de produção.</p>
+   <form id="signupForm">
+    <div class="field"><label for="signupName">Nome de exibição</label><input id="signupName" required maxlength="100" minlength="2"></div>
+    <div class="field"><label for="signupEmail">E-mail</label><input id="signupEmail" type="email" autocomplete="email" required maxlength="254"></div>
+    <div class="field"><label for="signupPassword">Senha</label><input id="signupPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></div>
+    <div class="field"><label for="signupConfirm">Confirmar senha</label><input id="signupConfirm" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></div>
+    <button class="btn primary" type="submit">Criar conta</button>
+   </form>
+   <form id="verifySignupForm" hidden>
+    <div class="field"><label for="signupOtp">Código enviado ao e-mail</label><input id="signupOtp" type="text" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="one-time-code" required></div>
+    <button class="btn primary" type="submit">Verificar e-mail</button>
+   </form>
+  </section>
  </section>
  <section id="accountPanel" hidden>
   <div class="panel">
