@@ -2,7 +2,7 @@
 
 **Endereço público:** https://frela-do-dia.l7526080.workers.dev/painel/
 
-**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A interface atual usa **e-mail e senha**, com uma opção separada para definir a primeira senha por **código OTP enviado ao e-mail**. A sessão com JWT real ainda precisa ser homologada no navegador. A página pública de vagas permanece um protótipo com anúncios fictícios.
+**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A interface atual usa **e-mail e senha**, com uma opção separada para definir a primeira senha por **código OTP enviado ao e-mail**. A titular confirmou que conseguiu entrar no painel em 21/11/2026, após correção do Worker; as novas áreas comerciais e a expiração de sessão ainda precisam de homologação no navegador. A página pública de vagas permanece um protótipo com anúncios fictícios.
 
 ## Gestão comercial adicionada em 21/11/2026
 
