@@ -18,3 +18,5 @@ jobs:
         run: |
           node --check auth-preview/src/main.js
           node tests/auth-static.mjs
+      - name: Validar API de desenvolvimento
+        run: node tests/dev-api.mjs
