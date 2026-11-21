@@ -6,7 +6,7 @@ const html=readFileSync(new URL('../account/index.html',import.meta.url),'utf8')
 const script=readFileSync(new URL('../account/app.js',import.meta.url),'utf8');
 const edge=readFileSync(new URL('../backend/public-site-worker.js',import.meta.url),'utf8');
 const db=readFileSync(new URL('../database/migrations/0009_account_onboarding.sql',import.meta.url),'utf8');
-for(const id of ['loginForm','authPanel','accountPanel','workerForm','individualForm','companyForm','recoveryRequest','recoveryReset','signupLocked','status']){
+for(const id of ['loginForm','authPanel','accountPanel','workerForm','individualForm','companyForm','recoveryRequest','recoveryReset','signupLocked','signupPanel','signupForm','verifySignupForm','status']){
  assert.ok(html.includes('id="'+id+'"'),'Campo ausente: '+id);
 }
 assert.match(html,/Inscrições públicas ainda não liberadas/);
@@ -15,7 +15,11 @@ assert.match(script,/auth\.signIn\.email/);
 assert.match(script,/auth\.getSession/);
 assert.match(script,/auth\.signOut/);
 assert.match(script,/accountRoutes/);
-assert.doesNotMatch(script,/auth\.signUp\.email/,'Signup público ainda não deve estar ativado');
+assert.match(script,/auth\.signUp\.email/,'Fluxo de inscrição deve estar pronto para homologação');
+assert.match(script,/auth\.emailOtp\.verifyEmail/,'Verificação do e-mail por OTP obrigatória');
+assert.match(script,/const PUBLIC_SIGNUPS_OPEN=false/,'Inscrição pública deve permanecer desligada');
+assert.match(script,/const LEGAL_DOCUMENTS_READY=false/,'Falta aprovação legal');
+assert.match(script,/if\(!PUBLIC_SIGNUPS_OPEN\|\|!LEGAL_DOCUMENTS_READY/,'Guardas devem barrar chamadas de inscrição');
 assert.doesNotMatch(script,/localStorage\.setItem|sessionStorage\.setItem/);
 assert.match(edge,/'\/conta\/':'account\/index\.html'/);
 assert.match(edge,/'\/conta\/app\.js':'account\/app\.js'/);
