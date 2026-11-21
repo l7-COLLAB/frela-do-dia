@@ -128,8 +128,99 @@
  function renderProfile(){const p=store.get('profile',{});if(!p.name)return;['Name','City','Area','Available','Skills','Notes'].forEach(k=>{const x=$('w'+k);if(x)x.value=p[k.toLowerCase()]||x.value});$('wOptIn').checked=!!p.optIn;$('profileName').textContent=p.name;$('profileAvatar').textContent=p.name.trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();$('profileSubtitle').textContent=(p.city||'Ijuí')+' · Perfil local';$('profileArea').textContent='Área: '+(p.area||'não definida');$('profileAvailable').textContent='Disponibilidade: '+(p.available||'flexível');$('profileSkills').textContent=p.skills||'Adicione suas habilidades'}
  $('profileForm').addEventListener('submit',e=>{e.preventDefault();const p={};['Name','City','Area','Available','Skills','Notes'].forEach(k=>p[k.toLowerCase()]=$('w'+k).value.trim());p.optIn=$('wOptIn').checked;store.set('profile',p);renderProfile();toast('Perfil salvo apenas neste aparelho')});
  $('clearData').addEventListener('click',()=>{if(!confirm('Apagar seus dados, vagas criadas e favoritos desta demonstração?'))return;['profile','jobs','saved'].forEach(k=>{delete memoryStore[k];try{localStorage.removeItem('frela-demo-'+k)}catch{}});extraJobs=[];saved=[];$('profileForm').reset();$('profileName').textContent='Seu nome aqui';$('profileAvatar').textContent='EU';$('profileSubtitle').textContent='Ijuí · Disponível para novas oportunidades';$('profileArea').textContent='Área de interesse: não definida';$('profileAvailable').textContent='Horário: flexível';$('profileSkills').textContent='Adicione suas habilidades';renderJobs();renderMyAds();toast('Dados de demonstração apagados')});renderProfile();
+
  $('cDate').value=dateOffset(1);$('cDate').min=dateOffset(0);
- $('companyForm').addEventListener('submit',e=>{e.preventDefault();const v=id=>$(id).value.trim();const pay=Number(v('cPay')),hours=Number(v('cHours'));if(!pay||pay<=0||!hours||hours<1||v('cDate')<dateOffset(0)){toast('Confira a data, o valor e a duração');return};const j={id:'custom-'+Date.now(),title:v('cTitle'),company:'Empresa em teste (anúncio local)',city:v('cCity'),district:v('cDistrict'),category:v('cArea'),emoji:categories.find(x=>x.name===v('cArea'))?.emoji||'💼',date:v('cDate'),time:v('cTime'),hours,pay,slots:Number(v('cSlots'))||1,payment:v('cPayment'),desc:v('cDuties'),requirements:v('cRequirements'),hygiene:v('cHygiene')};extraJobs.unshift(j);store.set('jobs',extraJobs);$('companyForm').reset();$('cDate').value=dateOffset(1);$('cTime').value='14:00';$('cHours').value=6;$('cPay').value=120;currentCat='Todas';timeFilter='all';onlySaved=false;$('jobsCity').value='';$('jobsSearch').value='';renderCategories();navigate('jobs');toast('Vaga de exemplo adicionada somente neste navegador')});
+ function syncAdvertiserForm(){
+   const fixed=$('cJobType').value==='permanent',individual=$('cAdvertiserType').value==='person';
+   $('cRegimeField').classList.toggle('hidden',!fixed);
+   $('cDateLabel').textContent=fixed?'Previsão de início *':'Data do serviço *';
+   $('cHoursLabel').textContent=fixed?'Horas por dia *':'Duração (horas) *';
+   $('cPayLabel').textContent=fixed?'Remuneração mensal (R$) *':'Pagamento total (R$) *';
+   $('cAdvertiserNameLabel').textContent=individual?'Nome público da pessoa física *':'Nome fantasia da empresa *';
+   $('cAdvertiserName').placeholder=individual?'Ex.: Morador de Ijuí (demonstração)':'Ex.: Empresa demonstrativa';
+   if(fixed){$('cPayment').value='Pagamento mensal conforme contrato';if(Number($('cPay').value)<500)$('cPay').value='1800'}
+   else if($('cPayment').value==='Pagamento mensal conforme contrato')$('cPayment').value='Pix ao concluir o serviço';
+ }
+ $('cAdvertiserType').addEventListener('change',syncAdvertiserForm);
+ $('cJobType').addEventListener('change',syncAdvertiserForm);
+ syncAdvertiserForm();
+
+ $('companyForm').addEventListener('submit',e=>{
+   e.preventDefault();
+   const v=id=>$(id).value.trim();
+   const pay=Number(v('cPay')),hours=Number(v('cHours')),slots=Number(v('cSlots'))||1;
+   if(!(pay>0)||!Number.isInteger(hours)||hours<1||hours>24||!Number.isInteger(slots)||slots<1||slots>100||v('cDate')<dateOffset(0)){toast('Confira data, duração, vagas e pagamento');return;}
+   const jobType=v('cJobType'),individual=v('cAdvertiserType')==='person';
+   const job={
+     id:'custom-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+     title:v('cTitle'),company:v('cAdvertiserName'),
+     advertiserType:individual?'person':'business',kind:jobType,
+     regime:jobType==='permanent'?v('cRegime'):'',
+     city:v('cCity'),district:v('cDistrict'),category:v('cArea'),
+     emoji:categories.find(x=>x.name===v('cArea'))?.emoji||'💼',
+     date:v('cDate'),expiresOn:jobType==='permanent'?dateOffset(30):'',
+     time:v('cTime'),hours,pay,slots,confirmed:0,status:'open',
+     payment:v('cPayment'),desc:v('cDuties'),
+     requirements:v('cRequirements'),hygiene:v('cHygiene')
+   };
+   extraJobs.unshift(job);saveExtra();
+   $('companyForm').reset();$('cDate').value=dateOffset(1);$('cTime').value='14:00';$('cHours').value='6';$('cPay').value='120';syncAdvertiserForm();
+   currentCat='Todas';timeFilter='all';onlySaved=false;kindFilter='all';$('jobsCity').value='';$('jobsSearch').value='';
+   renderCategories();navigate('myAds');
+   toast('Anúncio criado só neste navegador');
+ });
+
+ function renderMyAds(){
+   const host=$('myAdsList');
+   if(!extraJobs.length){host.innerHTML='<div class="empty"><span>📋</span><strong>Você ainda não criou anúncios de demonstração.</strong>Use o botão “Novo anúncio” para começar.</div>';return;}
+   host.innerHTML=extraJobs.map(j=>{
+      const state=statusOf(j),open=state==='open',confirmed=Math.min(j.slots||1,j.confirmed||0);
+      return '<article class="owner-card"><div class="job-top"><div><span class="state-chip '+state+'">'+statusLabels[state]+'</span><h3>'+safe(j.title)+'</h3><div class="company">'+safe(j.company)+' · '+safe(j.city)+' · '+safe(typeLabels[kind(j)]||'Serviço pontual')+'</div></div><strong class="money">'+money(j.pay)+'</strong></div>'+
+        '<p>'+safe(dateLabel(j.date))+' às '+safe(j.time)+' · '+(kind(j)==='permanent'?'Remuneração mensal':'Pagamento pelo serviço')+
+        ' · '+(open?('Posições simuladas: '+confirmed+'/'+j.slots):'Vaga indisponível para novas candidaturas')+'</p>'+
+        '<div class="owner-actions">'+
+        (open?'<button type="button" class="btn btn-light btn-sm" data-confirmed="'+safe(j.id)+'">+ 1 posição preenchida</button><button type="button" class="btn btn-outline btn-sm" data-end="'+safe(j.id)+'">Encerrar vaga</button>':'')+
+        '<button type="button" class="btn btn-primary btn-sm" data-clone="'+safe(j.id)+'">Duplicar vaga</button></div></article>';
+   }).join('');
+ }
+ $('myAdsList').addEventListener('click',e=>{
+   const add=e.target.closest('[data-confirmed]');
+   const end=e.target.closest('[data-end]');
+   const clone=e.target.closest('[data-clone]');
+   if(add){
+     const j=extraJobs.find(x=>x.id===add.dataset.confirmed);
+     if(!j||!isOpen(j))return;
+     j.confirmed=Math.min(j.slots,(j.confirmed||0)+1);
+     if(j.confirmed>=j.slots)j.status='filled';
+     saveExtra();renderMyAds();renderJobs();
+     toast(j.status==='filled'?'Todas as vagas foram preenchidas (simulação)':'Posição confirmada apenas nesta demonstração');
+     return;
+   }
+   if(end){
+     const j=extraJobs.find(x=>x.id===end.dataset.end);
+     if(!j||!isOpen(j)||!confirm('Encerrar este anúncio de teste?'))return;
+     j.status='closed';saveExtra();renderMyAds();renderJobs();
+     toast('Anúncio encerrado apenas neste navegador');
+     return;
+   }
+   if(clone){
+     const j=extraJobs.find(x=>x.id===clone.dataset.clone);if(!j)return;
+     const nextDate=prompt('Confirme a data da nova oportunidade (AAAA-MM-DD):',dateOffset(1));
+     if(nextDate===null)return;
+     if(!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)||!Number.isFinite(new Date(nextDate+'T12:00:00').getTime())||nextDate<dateOffset(0)){alert('Data inválida.');return;}
+     const nextTime=prompt('Confirme o novo horário (HH:MM):',j.time);if(nextTime===null)return;
+     if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(nextTime)){alert('Horário inválido.');return;}
+     const nextPayStr=prompt(kind(j)==='permanent'?'Confirme a remuneração mensal (R$):':'Confirme o pagamento pelo serviço (R$):',String(j.pay));
+     if(nextPayStr===null)return;
+     const pay=Number(nextPayStr.replace(',','.'));if(!Number.isFinite(pay)||pay<=0){alert('Valor inválido.');return;}
+     const nextSlots=prompt('Confirme quantas pessoas serão necessárias:',String(j.slots));if(nextSlots===null)return;
+     const slots=Number(nextSlots);if(!Number.isInteger(slots)||slots<1||slots>100){alert('Quantidade inválida.');return;}
+     if(!confirm('Duplicar este anúncio com os dados confirmados? Na plataforma real, a nova publicação passará por moderação.'))return;
+     const copy={...j,id:'custom-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),date:nextDate,time:nextTime,pay,slots,confirmed:0,status:'open',expiresOn:kind(j)==='permanent'?dateOffset(30):''};
+     extraJobs.unshift(copy);saveExtra();renderMyAds();renderJobs();toast('Cópia criada nesta demonstração, sem copiar candidaturas');
+   }
+ });
+
  renderCategories();renderJobs();
 })();
 </script>
