@@ -20,3 +20,9 @@ jobs:
           node tests/auth-static.mjs
       - name: Validar API de desenvolvimento
         run: node tests/dev-api.mjs
+      - name: Instalar dependências do login de homologação
+        working-directory: auth-preview
+        run: npm install --no-audit --no-fund
+      - name: Compilar login de homologação (não implantar)
+        working-directory: auth-preview
+        run: npm run build
