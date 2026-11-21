@@ -63,6 +63,11 @@ SELECT app_private.review_job(
  '00000000-0000-4000-9000-000000000203','published',
  'moderador-de-teste','Anúncio de pessoa física conferido para o teste');
 
+-- Suspensão: também precisa encerrar a vaga pública da pessoa física.
+SELECT app_private.review_hirer(
+ 'individual_hirer','00000000-0000-4000-9000-000000000103','suspended',
+ 'moderador-de-teste','Suspensão preventiva simulada após revisão administrativa');
+
 INSERT INTO public.applications(id,job_id,applicant_user_id)
 VALUES
  ('00000000-0000-4000-9000-000000000301',
@@ -98,6 +103,10 @@ SELECT
   (SELECT filled_slots FROM public.job_postings
    WHERE id='00000000-0000-4000-9000-000000000201') AS filled_slots,
   (SELECT count(*) FROM public.engagements) AS confirmed_engagements,
+  (SELECT status FROM public.job_postings
+   WHERE id='00000000-0000-4000-9000-000000000203') AS suspended_pf_job_status,
+  (SELECT verification_state FROM public.individual_hirers
+   WHERE id='00000000-0000-4000-9000-000000000103') AS suspended_pf_state,
   (SELECT count(*) FROM app_private.audit_events) AS audits,
   has_schema_privilege('authenticated','app_private','USAGE') AS auth_schema_access,
   has_function_privilege('authenticated',
