@@ -1,6 +1,6 @@
 # Neon — configuração e implantação do Frela do Dia
 
-**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0007 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
+**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0008 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
 
 ## Arquitetura
 
@@ -43,8 +43,9 @@ Executar na ordem, separadamente, após fazer uma branch de teste:
 5. [0005_individual_hirer_rls.sql](../database/migrations/0005_individual_hirer_rls.sql): políticas RLS de PF e revisão dos acessos a anúncios, candidaturas e contratações.
 6. [0006_private_moderation_and_hiring.sql](../database/migrations/0006_private_moderation_and_hiring.sql): schema `app_private`, funções administrativas de verificação e publicação, seleção de candidatura com limite de vagas e trilha de auditoria.
 7. [0007_admin_dashboard_access.sql](../database/migrations/0007_admin_dashboard_access.sql): allowlist privada de operadores, consulta de pendências e decisões administrativas via RPC autorizado por identidade Neon Auth.
+8. [0008_commercial_admin.sql](../database/migrations/0008_commercial_admin.sql): catálogo comercial privado, preços de teste editáveis com auditoria e controle de versão, registros futuros de pagamentos (ainda vazios) e RPC de visão de negócio.
 
-Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
+Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
 
 Depois, executar [verify_access.sql](../database/tests/verify_access.sql), [verify_hirer_and_jobs.sql](../database/tests/verify_hirer_and_jobs.sql), [verify_roles_no_jwt.sql](../database/tests/verify_roles_no_jwt.sql) e os testes com JWTs reais emitidos pelo Neon Auth. Os três primeiros testes **passaram** no ambiente de desenvolvimento em 20/11/2026; os testes ponta a ponta com sessões válidas ainda estão pendentes.
 
@@ -82,6 +83,14 @@ Usar contas de teste independentes: trabalhador A, trabalhador B, empresa A, emp
 
 A versão atual em `index.html` usa dados fictícios e `localStorage`. Isso foi preservado propositalmente.
 A implementação do login e das chamadas reais será uma etapa posterior ao sucesso dos testes de RLS.
+
+## Área comercial no banco de desenvolvimento
+
+A migração 0008 foi validada primeiro na branch isolada `authorization-tests` e depois aplicada a `development-rls`. A autorização exige operador ativo na allowlist privada, e os produtos pagos continuam com status `draft`.
+
+As tabelas `app_private.commercial_offers`, `app_private.commercial_price_history` e `app_private.billing_receipts` têm RLS e **nenhum grant público**. A função `frela_admin_commercial` retorna indicadores e listas comerciais; `frela_admin_change_price` altera preço com justificativa e revisão otimista, registrando o histórico.
+
+**A tabela de recebimentos está vazia e nenhum provedor de pagamento está conectado.** Receitas não devem ser inferidas de anúncios cadastrados. [Ver regras](PAINEL_COMERCIAL.md).
 
 ## Painel administrativo na rota pública (acesso restrito)
 
