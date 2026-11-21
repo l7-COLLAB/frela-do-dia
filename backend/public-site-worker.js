@@ -7,19 +7,24 @@ const ROUTES={
  '/index.html':'index.html',
  '/painel':'admin/index.html',
  '/painel/':'admin/index.html',
- '/painel/app.js':'admin/app.js'
+ '/painel/app.js':'admin/app.js',
+ '/conta':'account/index.html',
+ '/conta/':'account/index.html',
+ '/conta/app.js':'account/app.js'
 };
 function headers(path){
  const admin=path.startsWith('/painel');
+ const account=path.startsWith('/conta');
+ const privatePage=admin||account;
  const h={
   'Content-Type':path.endsWith('.js')?'text/javascript; charset=utf-8':'text/html; charset=utf-8',
-  'Cache-Control':admin?'no-store':'public, max-age=60',
+  'Cache-Control':privatePage?'no-store':'public, max-age=60',
   'X-Content-Type-Options':'nosniff',
   'Referrer-Policy':'strict-origin-when-cross-origin',
   'X-Frame-Options':'DENY',
   'X-Robots-Tag':'noindex, nofollow'
  };
- if(admin)h['Content-Security-Policy']=
+ if(privatePage)h['Content-Security-Policy']=
  "default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; "+
  "script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "+
  "connect-src 'self' https://esm.sh https://*.neonauth.c-16.us-east-1.aws.neon.tech https://frela-do-dia-api-dev.l7526080.workers.dev; "+
@@ -34,7 +39,7 @@ export default{
   const target=ROUTES[path];
   if(!target)return new Response('Página não encontrada',{status:404,headers:{'Content-Type':'text/plain; charset=utf-8'}});
   try{
-   const upstream=await fetch(ROOT+target,{cf:{cacheEverything:true,cacheTtl:path.startsWith('/painel')?30:120}});
+   const upstream=await fetch(ROOT+target,{cf:{cacheEverything:true,cacheTtl:(path.startsWith('/painel')||path.startsWith('/conta'))?30:120}});
    if(!upstream.ok)return new Response('Página temporariamente indisponível',{status:502});
    const h=headers(path);
    return new Response(request.method==='HEAD'?null:upstream.body,{status:200,headers:h});
