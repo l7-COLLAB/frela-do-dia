@@ -2,7 +2,7 @@
 
 **Endereço público:** https://frela-do-dia.l7526080.workers.dev/painel/
 
-**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A autenticação usa **Magic Link** (link por e-mail com duração de 10 minutos), sem senha. A sessão com JWT real ainda deve ser homologada. A página pública de vagas permanece um protótipo com anúncios fictícios.
+**Status:** interface implantada no Worker público em 20/11/2026, conectada **somente ao Neon de desenvolvimento**. Uma única conta administrativa de desenvolvimento foi cadastrada e autorizada. A interface atual usa **e-mail e senha**, com uma opção separada para definir a primeira senha por **código OTP enviado ao e-mail**. A sessão com JWT real ainda precisa ser homologada no navegador. A página pública de vagas permanece um protótipo com anúncios fictícios.
 
 ## O que já existe
 
@@ -25,18 +25,18 @@
 6. O esquema privado não tem permissões para `anonymous` nem `authenticated`.
 7. O frontend jamais é um controle de segurança suficiente, a proteção é verificada no Neon em toda ação.
 
-## Acesso administrativo de homologação
+## Acesso administrativo de homologação — e-mail e senha
 
-1. Abra https://frela-do-dia.l7526080.workers.dev/painel/.
-2. Informe o e-mail **previamente cadastrado e autorizado** no Neon Auth e selecione **Enviar link seguro de acesso**.
-3. Abra a mensagem na mesma conta de e-mail e siga o link recebido. Ele expira em **10 minutos**, e o reenvio possui um intervalo mínimo na interface.
-4. O Neon Auth gerencia a sessão. O painel envia um JWT à API Cloudflare, que exige a presença do ID do usuário na tabela privada de administradores.
-5. Faça logout ao terminar. Não compartilhe o link de acesso nem o token, e não utilize dados de pessoas reais enquanto a homologação não estiver concluída.
+1. Abra **https://frela-do-dia.l7526080.workers.dev/painel/** no Safari.
+2. Se ainda não definiu sua senha, selecione **Definir ou recuperar senha**.
+3. Informe o **e-mail já autorizado** e clique em **Enviar código de verificação**.
+4. Copie os seis números recebidos no Gmail, escolha uma senha de pelo menos **12 caracteres** e confirme-a. A senha é tratada exclusivamente pelo Neon Auth; não envie por chat.
+5. Volte ao formulário principal, informe e-mail e senha e toque em **Entrar**.
+6. A API mantém a verificação de JWT e a allowlist privada de operadores. Não são permitidos novos cadastros.
 
-**Configuração:** o plugin Magic Link foi habilitado **somente no Neon de desenvolvimento**, com `disable_sign_up=true`; cadastro público por e-mail/senha permanece desativado. A conta criada ainda não possuía sessão autenticada quando a autorização foi registrada. O login por Magic Link comprova controle da caixa postal ao criar uma sessão.
+**Configuração Neon:** e-mail/senha habilitados, `disable_sign_up=true`, exigência de e-mail verificado e revogação de sessões antigas ao definir nova senha. A conta administrativa já existe, estava verificada e **não tinha credencial de senha** antes deste ajuste. O método Magic Link foi retirado da interface; a configuração de infraestrutura existente foi mantida temporariamente como contingência até a primeira entrada por senha ser homologada.
 
-**Acesso não é fornecido pelo e-mail digitado:** somente o JWT emitido pelo Neon para o ID autorizado libera as consultas. Não inserir operador diretamente a partir de uma requisição pública.
-
+**Limitações de teste:** o envio e o consumo de um OTP real ainda não foram testados na caixa de entrada da titular. O fluxo foi preparado conforme os métodos `forgetPassword.emailOtp` e `emailOtp.resetPassword` documentados pelo Neon, com confirmação de senha, bloqueio de novas contas e senhas nunca persistidas pelo código do painel.
 
 ## Correção de sessão no Gmail / iPhone — 21/11/2026
 
@@ -50,9 +50,20 @@ Após o primeiro link de acesso, a interface mostrou **“Sessão expirada. Entr
 
 **Estado confirmado:** e-mail verificado e uma sessão ativa no Neon Auth; testes simulados do código passaram. Ainda falta a confirmação de login completo no Safari/Gmail com um JWT real e a resposta da API ao token.
 
+## Alteração de acesso — 21/11/2026
+
+Após novas tentativas, o navegador interno do Gmail exibiu **“Sessão inválida ou expirada”** mesmo com o e-mail verificado. A decisão foi substituir o Magic Link na interface por **login com e-mail e senha**.
+
+- [x] Formulário atualizado com dois campos: e-mail e senha.
+- [x] Definição de primeira senha / recuperação por OTP de seis dígitos (opção recolhida).
+- [x] Neon configurado para manter inscrição pública desativada, exigência de e-mail verificado e revogação de sessões na redefinição.
+- [x] Rotina de teste simulado de autenticação por senha, solicitação do código e gravação da nova senha.
+- [ ] A titular definir a primeira senha com OTP real e confirmar acesso no Safari.
+- [ ] Homologar renovação de JWT e resposta dos endpoints administrativos com a sessão por senha.
+
 ## Limitações registradas
 
-- **Não foi confirmada uma sessão real de login via Magic Link no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
+- **Ainda não foi confirmada uma sessão administrativa funcional por e-mail e senha no navegador.** A integração com o SDK do Neon é uma implementação cuja execução ponta a ponta ainda precisa de testes.
 - Dependência ESM do SDK no navegador utiliza versão fixa via CDN; a disponibilidade e o comportamento em Safari iPhone devem ser confirmados antes de abrir a operação.
 - A publicação do Worker foi confirmada via Cloudflare API, e a rota foi acrescentada ao código. Não foi possível verificar a resposta HTTP externa do domínio nesta sessão.
 - O preenchimento da fila pública ainda é vazio: cadastros e anúncios verdadeiros não estão abertos.
