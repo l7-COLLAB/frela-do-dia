@@ -21,6 +21,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .review-list{display:grid;gap:12px}.item{border:1px solid var(--line);border-radius:15px;background:white;padding:19px;display:flex;justify-content:space-between;align-items:center;gap:20px}.item h3{margin:0 0 6px;font-size:17px}.item p{color:var(--muted);margin:4px 0;font-size:13px}.mini{font-size:11px;letter-spacing:.3px;font-weight:850;color:#966d2d;background:#fff3db;border-radius:30px;padding:6px 10px;display:inline-block;margin-bottom:9px}.item .buttons{display:flex;flex-wrap:wrap;gap:9px}.empty{padding:44px 20px;text-align:center;background:white;border:1px dashed #c4d6c7;border-radius:18px;color:var(--muted)}
 .detail{max-width:560px}.detail h2{margin-top:0}.fine{font-size:12px;color:var(--muted);line-height:1.6}.divider{margin:20px 0;border:0;border-top:1px solid var(--line)}
 @media(max-width:640px){.shell{margin-top:22px}.hero{flex-direction:column}.stats{gap:8px}.stat{padding:13px}.stat b{font-size:25px}.stat span{font-size:11px}.item{align-items:stretch;flex-direction:column}.item .buttons>*{flex:1}.panel{padding:19px}}
+
+.admin-nav{display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:4px 0 14px;margin:18px 0 25px;scrollbar-width:thin}
+.admin-nav button{white-space:nowrap;background:white;border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;font-weight:800}
+.admin-nav button[aria-current=page]{background:var(--green);color:#fff;border-color:var(--green)}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:0 0 18px}
+.section-head h2{font-size:clamp(23px,3.4vw,30px);letter-spacing:-1px;margin:5px 0 4px}
+.section-head p{margin:0;color:var(--muted);font-size:13px}
+.business-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.business-stats .stat b{font-size:clamp(22px,3vw,30px);overflow-wrap:anywhere}
+.business-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.panel.compact{padding:20px;box-shadow:none}.panel.compact h3{margin:0 0 8px}
+.panel.compact p{min-height:62px}
+.notice{background:#fef7e8;border:1px solid #e9d7af;border-radius:14px;padding:15px 17px;font-size:13px;color:#755723;line-height:1.6;margin:16px 0 23px}
+.subhead{font-size:18px;margin:25px 0 13px}
+.filter-select{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;max-width:100%}
+.inline-label{margin:0}
+.offer-row{align-items:stretch;display:block}
+.offer-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.offer-top h3{margin:0 0 5px}.offer-price{font-size:24px;font-weight:850;color:var(--green);white-space:nowrap}
+.offer-form{margin-top:16px;display:grid;grid-template-columns:minmax(130px,170px) 1fr auto;gap:10px;align-items:end}
+.offer-form label{margin:0 0 5px}.offer-form input{min-height:44px}
+.data-item{display:block}.data-item h3{margin:0 0 5px}
+@media(max-width:760px){.business-grid{grid-template-columns:1fr}.panel.compact p{min-height:0}.offer-form{grid-template-columns:1fr}.business-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-nav{margin-left:-4px;margin-right:-4px}}
 </style>
 </head>
 <body>
@@ -62,15 +85,64 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
    <button id="logoutInLogin" class="btn outline" type="button" hidden style="width:100%;margin-top:10px">Sair da conta conectada</button>
    <p class="fine" style="margin-top:20px">Acesso exclusivo ao ambiente de desenvolvimento. O painel não publica anúncios reais.</p>
  </section>
+
  <section id="dashboard" hidden>
-   <div class="actions"><span id="identity"></span><button id="refresh" type="button" class="btn outline">Atualizar fila</button><button id="logout" type="button" class="btn outline">Sair</button></div>
-   <div class="stats"><div class="stat"><b id="countCompanies">0</b><span>Empresas pendentes</span></div><div class="stat"><b id="countIndividuals">0</b><span>Pessoas físicas</span></div><div class="stat"><b id="countJobs">0</b><span>Vagas pendentes</span></div></div>
-   <div class="tabs" role="tablist" aria-label="Tipos de solicitação">
-     <button type="button" data-tab="companies" role="tab" aria-selected="true">Empresas</button>
-     <button type="button" data-tab="individuals" role="tab" aria-selected="false">Pessoas físicas</button>
-     <button type="button" data-tab="jobs" role="tab" aria-selected="false">Vagas</button>
-   </div>
-   <div id="items" class="review-list"></div>
+   <div class="actions"><span id="identity"></span><button id="refresh" type="button" class="btn outline">Atualizar dados</button><button id="logout" type="button" class="btn outline">Sair</button></div>
+   <nav class="admin-nav" aria-label="Áreas administrativas">
+     <button type="button" data-section="overview" aria-current="page">Visão geral</button>
+     <button type="button" data-section="review">Moderação</button>
+     <button type="button" data-section="advertisers">Anunciantes</button>
+     <button type="button" data-section="offers">Pacotes e preços</button>
+     <button type="button" data-section="billing">Financeiro</button>
+     <button type="button" data-section="activity">Histórico</button>
+   </nav>
+   <section id="overviewSection" aria-labelledby="overviewTitle">
+     <div class="section-head"><div><div class="eyebrow">RESUMO OPERACIONAL</div><h2 id="overviewTitle">Visão geral do negócio</h2><p>Indicadores do banco de desenvolvimento. Sem dados simulados de receita.</p></div></div>
+     <div class="stats business-stats">
+       <div class="stat"><b id="overviewCompanies">0</b><span>Empresas cadastradas</span></div>
+       <div class="stat"><b id="overviewPeople">0</b><span>Pessoas físicas</span></div>
+       <div class="stat"><b id="overviewWorkers">0</b><span>Trabalhadores</span></div>
+       <div class="stat"><b id="overviewJobs">0</b><span>Vagas disponíveis</span></div>
+       <div class="stat"><b id="overviewPaying">0</b><span>Clientes pagantes confirmados</span></div>
+       <div class="stat"><b id="overviewRevenue">R$ 0,00</b><span>Receita bruta confirmada</span></div>
+     </div>
+     <div class="business-grid">
+       <div class="panel compact"><h3>Pendências de moderação</h3><p class="fine" id="overviewPending">Carregando dados…</p><button type="button" class="btn primary" data-go="review">Revisar solicitações</button></div>
+       <div class="panel compact"><h3>Pacotes comerciais</h3><p class="fine">Consulte e altere os valores de teste. Nenhuma cobrança é iniciada por esta tela.</p><button type="button" class="btn outline" data-go="offers">Gerenciar preços</button></div>
+       <div class="panel compact"><h3>Recebimentos</h3><p class="fine">A integração de pagamento ainda não está habilitada. Só serão exibidos pagamentos confirmados por um provedor.</p><button type="button" class="btn outline" data-go="billing">Ver financeiro</button></div>
+     </div>
+   </section>
+   <section id="reviewSection" hidden aria-labelledby="reviewTitle">
+     <div class="section-head"><div><div class="eyebrow">REVISÃO ADMINISTRATIVA</div><h2 id="reviewTitle">Moderação de anúncios</h2><p>Aprove ou rejeite apenas solicitações realmente pendentes.</p></div></div>
+     <div class="stats"><div class="stat"><b id="countCompanies">0</b><span>Empresas pendentes</span></div><div class="stat"><b id="countIndividuals">0</b><span>Pessoas físicas pendentes</span></div><div class="stat"><b id="countJobs">0</b><span>Vagas pendentes</span></div></div>
+     <div class="tabs" role="tablist" aria-label="Tipos de solicitação">
+       <button type="button" data-tab="companies" role="tab" aria-selected="true">Empresas</button>
+       <button type="button" data-tab="individuals" role="tab" aria-selected="false">Pessoas físicas</button>
+       <button type="button" data-tab="jobs" role="tab" aria-selected="false">Vagas</button>
+     </div>
+     <div id="items" class="review-list"></div>
+   </section>
+   <section id="advertisersSection" hidden aria-labelledby="advertisersTitle">
+     <div class="section-head"><div><div class="eyebrow">CADASTROS</div><h2 id="advertisersTitle">Anunciantes</h2><p>Empresas e pessoas físicas registradas, independentemente de pagamento.</p></div></div>
+     <div class="actions"><label for="advertiserFilter" class="inline-label">Filtrar por status</label><select id="advertiserFilter" class="filter-select"><option value="all">Todos</option><option value="pending">Pendentes</option><option value="verified">Verificados</option><option value="rejected">Rejeitados</option><option value="suspended">Suspensos</option></select></div>
+     <div id="advertiserItems" class="review-list"></div>
+   </section>
+   <section id="offersSection" hidden aria-labelledby="offersTitle">
+     <div class="section-head"><div><div class="eyebrow">CATÁLOGO COMERCIAL</div><h2 id="offersTitle">Pacotes e preços</h2><p>Edite os valores propostos e registre o motivo da alteração.</p></div></div>
+     <div class="notice"><strong>Preços em preparação.</strong> As alterações são salvas no Neon de desenvolvimento, mas ainda não aparecem em um checkout nem cobram clientes. Ofertas continuam como rascunho.</div>
+     <div id="offerItems" class="review-list"></div>
+   </section>
+   <section id="billingSection" hidden aria-labelledby="billingTitle">
+     <div class="section-head"><div><div class="eyebrow">GESTÃO FINANCEIRA</div><h2 id="billingTitle">Clientes pagantes e receitas</h2><p>Acompanhamento baseado exclusivamente em pagamentos confirmados.</p></div></div>
+     <div class="stats"><div class="stat"><b id="billingCustomers">0</b><span>Clientes que pagaram</span></div><div class="stat"><b id="billingOrders">0</b><span>Pagamentos confirmados</span></div><div class="stat"><b id="billingRevenue">R$ 0,00</b><span>Receita bruta registrada</span></div></div>
+     <div class="notice" id="billingNotice">Aguardando integração de checkout Pix/cartão. Não há pagamentos reais processados pela plataforma.</div>
+     <h3 class="subhead">Clientes pagantes</h3><div id="payingClientItems" class="review-list"></div>
+     <h3 class="subhead">Últimos recebimentos</h3><div id="paymentItems" class="review-list"></div>
+   </section>
+   <section id="activitySection" hidden aria-labelledby="activityTitle">
+     <div class="section-head"><div><div class="eyebrow">TRANSPARÊNCIA ADMINISTRATIVA</div><h2 id="activityTitle">Histórico de alterações de preços</h2><p>As mudanças de valores ficam registradas para conferência.</p></div></div>
+     <div id="historyItems" class="review-list"></div>
+   </section>
  </section>
  <section class="panel detail" id="decisionPanel" hidden>
    <h2 id="decisionTitle">Analisar solicitação</h2>
