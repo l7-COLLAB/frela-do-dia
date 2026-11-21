@@ -21,7 +21,12 @@
 - [x] Demonstrar formulário para empresas e pessoas físicas
 - [x] Criar tabela PF separada e políticas RLS por proprietário no Neon de testes
 - [x] Preparar funções SQL privadas para verificar/suspender contratantes, com auditoria
-- [ ] Implementar identidade do administrador, verificação documental e painel de moderação real para PF e PJ
+- [x] Publicar rota `/painel/` com interface administrativa responsiva e acesso no rodapé
+- [x] Criar allowlist privada de operadores e funções RPC protegidas por autenticação
+- [x] Integrar frontend do painel à API Cloudflare de desenvolvimento, com validação e auditabilidade
+- [x] Executar teste reversível de acesso negado a usuário comum e decisão administrativa simulada
+- [ ] Habilitar conta de administradora verificada e testar login JWT real no Safari e desktop
+- [ ] Implementar validação documental e homologação de moderação real para PF e PJ
 - [x] Diferenciar, na interface demonstrativa, emprego fixo, diária e serviço pontual
 - [x] Modelar os três tipos de vaga no Neon de testes, com regras de remuneração
 - [ ] Integrar os três tipos às APIs reais e ao painel administrativo
