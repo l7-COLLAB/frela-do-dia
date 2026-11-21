@@ -9,6 +9,8 @@ assert.match(code, /createAuthClient\(authUrl\)/);
 assert.match(code, /await auth\.getSession\(\)/);
 assert.match(code, /await auth\.signIn\.email\(/);
 assert.match(code, /await auth\.token\(\)/);
+assert.match(code, /\/v1\/me\/worker/,'O frontend deve consultar a API própria, não a tabela diretamente');
+assert.doesNotMatch(code, /['"]\s*\+\s*'\/worker_profiles'/,'Consulta direta à tabela não é permitida neste teste');
 assert.match(code, /await auth\.signOut\(\)/);
 assert.match(code, /row\.user_id === activeUser\.id/, 'Conferência defensiva de identidade ausente');
 assert.doesNotMatch(code, /localStorage\.setItem\(|sessionStorage\.setItem\(/);
