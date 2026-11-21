@@ -47,6 +47,19 @@
 - [ ] Criar planos mensais para anunciantes após homologar checkout e conciliação
 - [ ] Ver [especificação e preços de teste](EXPANSAO_REGIONAL_E_MONETIZACAO.md)
 
+## Implementação dos cadastros — 21/11/2026
+
+- [x] Criar `/conta/` com login, recuperação de senha, sessão e formulários de trabalhador, PF e empresa
+- [x] Criar RPCs próprias com validação de campos, identidade vinda do JWT e proteção RLS
+- [x] Testar duas identidades fictícias, isolamento, edição e bloqueio de duplicidades com rollback
+- [x] Publicar página e API de perfis separadamente da administração, sem alterar o visual da home
+- [x] Atualizar cache da Data API e validar permissões no Neon de desenvolvimento
+- [x] Confirmar GitHub Actions passando nos testes de onboarding
+- [ ] Homologar salvamento no iPhone com a conta administrativa de teste
+- [ ] Finalizar termos, privacidade, antifraude, e-mail e testes com dois logins reais distintos
+- [ ] Abrir inscrição pública somente após homologação e migração para `production`
+- [ ] Conectar publicação de vagas e candidaturas a partir dos novos perfis
+
 ## Fase 2 — MVP funcional
 - [x] Modelar tabelas e registrar políticas Neon RLS no GitHub
 - [x] Criar projeto Neon `frela-do-dia` e branch de testes `development-rls`
@@ -62,7 +75,8 @@
 - [x] Conectar código do login de homologação à API Cloudflare (sem publicar o login público)
 - [x] Executar matriz de RLS com identidades simuladas, em transação reversível
 - [ ] Testar endpoints da API Cloudflare por HTTP externo e autenticação com JWT válido
-- [ ] Publicar, testar e integrar login à interface principal
+- [x] Publicar login e perfis em rota separada `/conta/` (contas de homologação)
+- [ ] Integrar a sessão Neon ao restante da interface pública após homologação
 - [ ] Homologar banco, autenticação e RLS antes de abrir cadastros
 - [ ] Cadastro e verificação de empresas/contratantes
 - [ ] Gestão real de vagas, expiração e moderação
