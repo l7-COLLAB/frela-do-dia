@@ -83,10 +83,12 @@ BEGIN
   IF NOT caught THEN RAISE EXCEPTION 'Foi permitido preencher mais vagas que o anunciado'; END IF;
 
   -- Contratação não pode apontar para PF diferente da titular da vaga.
+  INSERT INTO public.applications(job_id,applicant_user_id)
+  VALUES(j1,'fixture-worker-b');
   caught := false;
   BEGIN
    INSERT INTO public.engagements(job_id,individual_hirer_id,worker_user_id)
-   VALUES (j1,p2,'fixture-worker-a');
+   VALUES (j1,p2,'fixture-worker-b');
   EXCEPTION WHEN foreign_key_violation THEN caught := true;
   END;
   IF NOT caught THEN RAISE EXCEPTION 'Contratação ficou vinculada à PF errada'; END IF;
