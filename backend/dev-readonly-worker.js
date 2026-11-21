@@ -67,7 +67,7 @@ export default {
       if(isAdminQueue&&request.method!=='GET')return respond({error:'method_not_allowed'},405,origin);
       if(isAdminDecision&&request.method!=='POST')return respond({error:'method_not_allowed'},405,origin);
       const token=request.headers.get('Authorization')||'';
-      if(!/^Bearer [^\\s]+$/.test(token)||token.length<40||token.length>8192)
+      if(!/^Bearer [^\s]+$/.test(token)||token.length<40||token.length>8192)
         return respond({error:'authentication_required'},401,origin);
       let rpcBody={};
       if(isAdminDecision){
@@ -97,7 +97,7 @@ export default {
           cache:'no-store',
           signal:AbortSignal.timeout(8000)
         });
-        if(upstream.status===401)return respond({error:'unauthorized'},401,origin);
+        if(upstream.status===401)return respond({error:'token_rejected_by_neon'},401,origin);
         if(upstream.status===403)return respond({error:'forbidden'},403,origin);
         if(upstream.status===400||upstream.status===409)return respond({error:'invalid_transition_or_request'},409,origin);
         if(!upstream.ok)return respond({error:'database_unavailable'},502,origin);
