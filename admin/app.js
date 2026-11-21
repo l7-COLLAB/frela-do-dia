@@ -224,6 +224,7 @@ $('resetPasswordForm').addEventListener('submit',async e=>{
   $('requestRecoveryForm').hidden=false;
   $('resetPasswordForm').hidden=true;
   $('email').value=email;
+  showLogin();
   status('Senha definida. Agora entre com seu e-mail e a nova senha.');
   $('password').focus();
  }catch(err){
