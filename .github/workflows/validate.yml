@@ -14,3 +14,7 @@ jobs:
         run: node tests/smoke.mjs
       - name: Validar estrutura e invariantes de RLS
         run: node tests/rls-static.mjs
+      - name: Validar módulo de autenticação Neon
+        run: |
+          node --check auth-preview/src/main.js
+          node tests/auth-static.mjs
