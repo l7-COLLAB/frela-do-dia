@@ -16,7 +16,8 @@ Estado: execução por etapas. NÃO liberar inscrições públicas nem usar dado
 
 ## Etapa 2 — Categorias, vagas e pesquisa
 - [x] Atualizar a interface demonstrativa com 16 categorias profissionais e 108 profissões, mantendo anúncios fictícios e cadastro fechado.
-- [ ] Persistir taxonomia estruturada em backend e conectar profissão do perfil/da vaga à API real.
+- [x] Criar tabelas de catálogo profissional no Neon de desenvolvimento, com leitura RLS e cadastro de 16 categorias e 108 profissões.
+- [ ] Conectar profissão do perfil/da vaga à API real, com validação de categoria.
 - [ ] Homologar aliases, filtros e renderização da interface em navegador real.
 - [ ] Ligar publicação real de anúncio aos perfis de empresas/PF verificadas.
 - [ ] Moderação antes da publicação; expiração e encerramento automáticos.
@@ -66,3 +67,8 @@ Estado: execução por etapas. NÃO liberar inscrições públicas nem usar dado
 - Compatibilidade: as cinco categorias antigas das vagas fictícias permanecem pesquisáveis por mapeamento.
 - Nenhuma vaga real foi ativada; API de desenvolvimento e branch production inalteradas.
 - GitHub Actions e teste visual precisam ser confirmados antes de homologar esta entrega.
+
+### Banco — migração 0010
+- Migração `database/migrations/0010_profession_catalog.sql` registrada no GitHub e aplicada em `development-rls`.
+- Consultas após implantação: 16 categorias, 108 profissões e 0 vagas reais; RLS habilitada nas duas tabelas novas.
+- Não aplicada em `production`.
