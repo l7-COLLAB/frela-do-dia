@@ -26,7 +26,10 @@ function setBusy(value){
  }
  if(!value){
   for(const button of document.querySelectorAll('button[data-temp-disabled]')){
-   button.disabled=false;delete button.dataset.tempDisabled;
+   // Não reativar solicitações que já foram registradas no Neon.
+   button.disabled=(button.id==='companySubmit'&&!!account?.company)
+     ||(button.id==='individualSubmit'&&!!account?.individual);
+   delete button.dataset.tempDisabled;
   }
  }
 }
