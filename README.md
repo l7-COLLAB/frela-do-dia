@@ -52,6 +52,12 @@ A arquitetura planejada usará **Neon PostgreSQL + Managed Neon Auth + Data API*
 O site público ainda é uma demonstração sem login real. Não informe dados pessoais reais nos formulários de teste.
 Executar `node tests/rls-static.mjs` para conferir algumas invariantes do código. Esse teste **não comprova** autorização real; será necessário testar com usuários distintos e tokens válidos depois de conectar o Neon.
 
+## Painel comercial — desenvolvimento
+
+O painel administrativo foi ampliado em 21/11/2026 com navegação por visão geral, moderação, anunciantes, **pacotes/preços editáveis**, clientes pagantes, financeiro e histórico. A [migração 0008](database/migrations/0008_commercial_admin.sql) está aplicada somente na branch Neon `development-rls`. Os seis preços iniciais são os valores de teste registrados no planejamento regional.
+
+A edição dos preços funciona por RPC privado e exige JWT e operador autorizado, com justificativa e versionamento. **Nenhum checkout, cobrança ou recebimento automático está ativo.** O painel mostra zero clientes pagantes até existir integração com provedor de pagamentos e registros confirmados. [Saiba como funciona](docs/PAINEL_COMERCIAL.md).
+
 ## Painel administrativo no site público (acesso restrito)
 
 Acesse **https://frela-do-dia.l7526080.workers.dev/painel/**. O Worker público agora oferece a página administrativa e seu JavaScript em rotas próprias, sem interferir na demonstração de vagas. Há um link discreto no rodapé do site.
