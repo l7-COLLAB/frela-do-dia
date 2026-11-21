@@ -48,6 +48,12 @@ A tela de anúncio já permite simular escolha de **pessoa física** ou **empres
 
 **Isso não corresponde a contas ou processos reais.** Até conectar o Neon e validar as políticas de autorização, não há autenticação, moderação operacional, candidaturas, cobrança ou sincronização entre dispositivos. Chat, notificações push e mural comercial continuam planejados.
 
+## Implementação de contas — 21/11/2026
+
+A rota `/conta/` oferece login por Neon Auth e salvamento autenticado de perfis de trabalhador, pessoa física ou empresa. A empresa e a PF entram em fila de verificação, sem autorização automática para anunciar.
+
+A inscrição pública permanece desativada; a camada de cadastro foi implementada apenas no banco de desenvolvimento e testada com identidades fictícias distintas. A página inicial e a agenda ainda são demonstrativas. Não apresentar esta etapa como abertura ao público antes dos testes de privacidade, segurança e autorização. [Detalhes](CONTAS_E_CADASTROS.md).
+
 ## Avaliações e contestações: adiadas
 As notas bilaterais e a contestação de falta de pagamento **não serão oferecidas no lançamento inicial**. A proposta foi preservada em [funcionalidades futuras](FUTURE_REVIEWS.md). O MVP não publicará acusações, reputações nem mensagens de disputa.
 
