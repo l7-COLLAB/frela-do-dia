@@ -1,6 +1,6 @@
 # Neon — configuração e implantação do Frela do Dia
 
-**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0006 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
+**Status em 20/11/2026:** projeto Neon gratuito `frela-do-dia` criado. Branch de testes `development-rls` com Neon Auth, Data API e migrações **0001 a 0007 aplicadas**. As sete tabelas do MVP estão com RLS habilitada, incluindo `individual_hirers`. A branch `production` **não recebeu o esquema do MVP**. Site público continua como demonstração, sem banco conectado.
 
 ## Arquitetura
 
@@ -42,8 +42,9 @@ Executar na ordem, separadamente, após fazer uma branch de teste:
 4. [0004_individual_hirers_and_job_types.sql](../database/migrations/0004_individual_hirers_and_job_types.sql): contratantes PF, associação exclusiva PF/PJ, emprego fixo, diárias e lotação.
 5. [0005_individual_hirer_rls.sql](../database/migrations/0005_individual_hirer_rls.sql): políticas RLS de PF e revisão dos acessos a anúncios, candidaturas e contratações.
 6. [0006_private_moderation_and_hiring.sql](../database/migrations/0006_private_moderation_and_hiring.sql): schema `app_private`, funções administrativas de verificação e publicação, seleção de candidatura com limite de vagas e trilha de auditoria.
+7. [0007_admin_dashboard_access.sql](../database/migrations/0007_admin_dashboard_access.sql): allowlist privada de operadores, consulta de pendências e decisões administrativas via RPC autorizado por identidade Neon Auth.
 
-Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 → 0006 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
+Cada arquivo contém uma transação `BEGIN ... COMMIT`. **Executar 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 nesta ordem, apenas em ambiente controlado e sem usuários reais.** A migração 0001 já habilita RLS e nega permissões, mas a aplicação só poderá operar após todas as políticas e testes.
 
 Depois, executar [verify_access.sql](../database/tests/verify_access.sql), [verify_hirer_and_jobs.sql](../database/tests/verify_hirer_and_jobs.sql), [verify_roles_no_jwt.sql](../database/tests/verify_roles_no_jwt.sql) e os testes com JWTs reais emitidos pelo Neon Auth. Os três primeiros testes **passaram** no ambiente de desenvolvimento em 20/11/2026; os testes ponta a ponta com sessões válidas ainda estão pendentes.
 
@@ -81,6 +82,14 @@ Usar contas de teste independentes: trabalhador A, trabalhador B, empresa A, emp
 
 A versão atual em `index.html` usa dados fictícios e `localStorage`. Isso foi preservado propositalmente.
 A implementação do login e das chamadas reais será uma etapa posterior ao sucesso dos testes de RLS.
+
+## Painel administrativo na rota pública (acesso restrito)
+
+O [painel](../admin/README.md) está publicado em `/painel/`, sem substituir a página de vagas. A API da Cloudflare encaminha o JWT à Neon Data API, que autentica e executa `frela_admin_queue` e `frela_admin_decide`. Ambas exigem um operador **ativo** cadastrado exclusivamente no schema privado. Não existem contas administrativas autorizadas ainda. Não inserir credenciais no GitHub.
+
+A migração 0007 foi executada no Neon `development-rls`. O [teste reversível](../database/tests/verify_admin_rpc_simulated.sql) passou em branch isolada: usuário sem permissão foi bloqueado; administrador simulado consultou e aprovou um cadastro; trilha de auditoria foi criada; todos os dados de teste foram revertidos.
+
+**Não considerar lançamento real:** a implementação do login ainda não foi testada com JWT válido em navegador real, e a publicação HTTP do site não pôde ser acessada pela ferramenta de verificação externa. O Worker principal foi atualizado via API e a Cloudflare confirmou implantação e subdomínio habilitado.
 
 ## Moderação administrativa no desenvolvimento
 
