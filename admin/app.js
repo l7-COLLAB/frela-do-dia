@@ -25,7 +25,7 @@ async function getToken(){
  if(!auth)throw new Error('Autenticação não inicializada.');
  const current=await auth.getSession();
  if(current.error||!current.data?.user){
-   throw new Error('Não foi possível confirmar sua sessão. Abra novamente o link de acesso recebido por e-mail.');
+   throw new Error('Não foi possível confirmar sua sessão. Entre novamente com e-mail e senha.');
  }
  // Conforme a documentação do Neon, o JWT pode vir em data.session.token.
  const fromSession=current.data.session?.token;
@@ -47,7 +47,15 @@ async function callApi(path,{method='GET',body}={}){
  });
  const payload=await response.json().catch(()=>({}));
  if(!response.ok){
-   if(response.status===401)throw new Error('Sessão inválida ou expirada.');
+   if(response.status===401){
+     if(payload?.error==='token_rejected_by_neon'){
+       throw new Error('Sua sessão foi reconhecida, mas o Neon recusou o token de acesso. Saia da conta e entre novamente com e-mail e senha.');
+     }
+     if(payload?.error==='authentication_required'){
+       throw new Error('A API não recebeu um token de autenticação válido. Entre novamente com e-mail e senha.');
+     }
+     throw new Error('A autenticação não foi aceita pela API. Saia e entre novamente.');
+   }
    if(response.status===403)throw new Error('Sua conta ainda não foi autorizada para administrar o Frela do Dia.');
    if(response.status===400)throw new Error('Dados inválidos para a decisão administrativa.');
    throw new Error('A operação não foi concluída (HTTP '+response.status+').');
