@@ -72,6 +72,18 @@
 - [ ] Termos, política de privacidade e controles LGPD
 - [ ] Testes de acessibilidade e fluxos mobile
 
+## Entregas da administração comercial — 21/11/2026
+
+- [x] Visão geral do negócio no painel, com indicadores reais do Neon de desenvolvimento
+- [x] Relação de empresas e pessoas físicas cadastradas com filtro por situação
+- [x] Catálogo dos seis preços de teste do planejamento, com edição e histórico auditável
+- [x] Estrutura privada de recibos e lista de clientes pagantes sem inventar receita
+- [x] API Cloudflare protegida por JWT/allowlist para leitura de negócio e edição de preços
+- [x] Testes de preços, autorização, conflitos de versão e rollback na branch isolada
+- [ ] Homologar edição de preços na sessão real do iPhone
+- [ ] Conectar provedor Pix/cartão e validar webhooks assinados antes de ativar anúncios pagos
+- [ ] Habilitar publicação comercial após integração de pagamento e moderação
+
 ## Fase 3 — Monetização e crescimento
 - [ ] Perfis profissionais completos e currículo opcional
 - [ ] Currículo premium e integração de pagamento por Pix
