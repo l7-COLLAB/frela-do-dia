@@ -11,13 +11,30 @@ const categories={
 };
 function status(msg,error=false){$('status').textContent=msg;$('status').classList.toggle('error',error)}
 function setBusy(value){busy=value;for(const b of document.querySelectorAll('button'))b.disabled=value}
-function showLogin(){user=null;queue=null;$('dashboard').hidden=true;$('decisionPanel').hidden=true;$('loginPanel').hidden=false;$('logoutInLogin').hidden=true}
-function showSession(u){user=u;$('loginPanel').hidden=true;$('dashboard').hidden=false;$('identity').textContent='Conta: '+(u.email||'usuário autenticado');$('decisionPanel').hidden=true}
+function showLogin(){user=null;queue=null;$('dashboard').hidden=true;$('decisionPanel').hidden=true;$('loginPanel').hidden=false;$('logoutInLogin').hidden=true;$('retryAccess').hidden=true}
+function showSession(u){user=u;$('loginPanel').hidden=true;$('dashboard').hidden=false;$('identity').textContent='Conta: '+(u.email||'usuário autenticado');$('decisionPanel').hidden=true;$('retryAccess').hidden=true}
+// Managed Neon Auth pode entregar o JWT junto com a sessão (JWT plugin).
+// Uma sessão válida no cookie NÃO significa que auth.token() sempre devolva data.token.
+// Nunca enviar à API um token opaco de sessão ou um valor não-JWT.
+function looksLikeJwt(value){
+ if(typeof value!=='string'||value.length<40||value.length>8192)return false;
+ const parts=value.split('.');
+ return parts.length===3&&parts.every(part=>/^[A-Za-z0-9_-]+$/.test(part));
+}
 async function getToken(){
- if(!auth)throw new Error('Autenticação ainda não inicializada.');
- const result=await auth.token();
- if(result.error||!result.data?.token)throw new Error('Sessão expirada. Entre novamente.');
- return result.data.token;
+ if(!auth)throw new Error('Autenticação não inicializada.');
+ const current=await auth.getSession();
+ if(current.error||!current.data?.user){
+   throw new Error('Não foi possível confirmar sua sessão. Abra novamente o link de acesso recebido por e-mail.');
+ }
+ // Conforme a documentação do Neon, o JWT pode vir em data.session.token.
+ const fromSession=current.data.session?.token;
+ if(looksLikeJwt(fromSession))return fromSession;
+ // Compatibilidade com versões do SDK que oferecem a chamada auth.token().
+ let issued;
+ try {issued=await auth.token();} catch(_) {issued=null;}
+ if(looksLikeJwt(issued?.data?.token))return issued.data.token;
+ throw new Error('O e-mail foi autenticado, mas o token de acesso à API não ficou disponível. Tente atualizar o painel. Se estiver no navegador interno do Gmail, abra o site no Safari.');
 }
 async function callApi(path,{method='GET',body}={}){
  const token=await getToken();
@@ -93,6 +110,7 @@ async function refresh(){
  }catch(e){
   queue=null;$('dashboard').hidden=true;$('loginPanel').hidden=false;
   $('logoutInLogin').hidden=false;
+  $('retryAccess').hidden=false;
   status(e.message||'Não foi possível carregar a administração.',true);
  }finally{setBusy(false)}
 }
@@ -136,6 +154,11 @@ async function logout(){
 $('logout').addEventListener('click',logout);
 $('logoutInLogin').addEventListener('click',logout);
 $('refresh').addEventListener('click',refresh);
+$('retryAccess').addEventListener('click',async()=>{
+ if(!auth||busy)return;
+ if(user){await refresh();return;}
+ await initialize();
+});
 for(const btn of document.querySelectorAll('[data-tab]'))btn.addEventListener('click',()=>{
  if(!queue)return;currentTab=btn.dataset.tab;render();
 });
