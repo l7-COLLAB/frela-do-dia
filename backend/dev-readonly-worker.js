@@ -86,7 +86,7 @@ export default {
           if(isAdminDecision&&!(['company','individual_hirer'].includes(obj.p_kind)?
                  ['verified','rejected','suspended'].includes(obj.p_decision):
                  ['published','rejected'].includes(obj.p_decision)))throw Error('bad_decision');
-          if(isAdminDecision&&typeof obj.p_justification!=='string'||obj.p_justification.trim().length<10||obj.p_justification.length>1200)throw Error('bad_reason');
+          if(isAdminDecision&&(typeof obj.p_justification!=='string'||obj.p_justification.trim().length<10||obj.p_justification.length>1200))throw Error('bad_reason');
           if(isAdminDecision){
             rpcBody={p_kind:obj.p_kind,p_id:obj.p_id,p_decision:obj.p_decision,p_justification:obj.p_justification.trim()};
           }else{
