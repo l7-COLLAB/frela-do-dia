@@ -58,6 +58,7 @@ async function callApi(path,{method='GET',body}={}){
    }
    if(response.status===403)throw new Error('Sua conta ainda não foi autorizada para administrar o Frela do Dia.');
    if(response.status===400)throw new Error('Dados inválidos para a decisão administrativa.');
+   if(response.status===409)throw new Error('Este registro foi alterado ou não pode receber a ação. Atualize os dados e tente novamente.');
    throw new Error('A operação não foi concluída (HTTP '+response.status+').');
  }
  return payload;
