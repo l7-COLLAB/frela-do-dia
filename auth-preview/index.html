@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Frela do Dia — Acesso de homologação</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+   :root{color-scheme:light;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#183f2c;background:#f7f9f2}
+   *{box-sizing:border-box}body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px}
+   main{width:min(100%,455px);background:white;border:1px solid #dce7da;border-radius:23px;padding:30px;box-shadow:0 22px 70px rgba(20,64,40,.08)}
+   a{color:#165f43}h1{font-size:25px;letter-spacing:-.9px;margin:0 0 10px}p{color:#5a7060;line-height:1.6}
+   .brand{font-size:24px;font-weight:850;color:#145e42;margin-bottom:24px}.brand span{color:#e4a336}
+   .tag{display:inline-block;font-size:11px;font-weight:750;color:#855a20;background:#f7eddb;border-radius:30px;padding:7px 12px;margin-bottom:16px}
+   label{display:block;font-weight:680;margin:14px 0 7px;font-size:13px}
+   input{font:inherit;padding:13px 14px;width:100%;border-radius:12px;border:1px solid #cad9cd;background:#fff}
+   input:focus{outline:2px solid #4a936b;outline-offset:1px}
+   button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 17px;font-weight:750}
+   button.primary{background:#146447;color:#fff;width:100%;margin-top:20px}
+   button.secondary{background:#e7f2ea;color:#145e42}
+   button:disabled{opacity:.5;cursor:wait}button:focus-visible{outline:3px solid #d6a13b;outline-offset:3px}
+   .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+   .status{background:#eff5ef;padding:12px;border-radius:11px;font-size:13px;line-height:1.5;margin-top:18px}
+   .status.error{background:#fff0ea;color:#9b392c}
+   .fineprint{font-size:12px;line-height:1.5;color:#65776b}
+   [hidden]{display:none!important}
+  </style>
+</head>
+<body>
+ <main>
+   <div class="brand">frela<span>do</span>dia<span>.</span></div>
+   <div class="tag">AMBIENTE DE HOMOLOGAÇÃO • ACESSO RESTRITO</div>
+   <h1>Entrar na sua conta</h1>
+   <p>Este formulário testa a integração com Neon Auth. Ainda não é o cadastro público do Frela do Dia.</p>
+   <form id="signInForm" autocomplete="on">
+     <label for="email">E-mail</label>
+     <input id="email" type="email" name="email" autocomplete="username" required maxlength="254">
+     <label for="password">Senha</label>
+     <input id="password" type="password" name="password" autocomplete="current-password" required minlength="8">
+     <button class="primary" type="submit">Entrar</button>
+   </form>
+   <section id="sessionPanel" hidden aria-live="polite">
+    <p id="loggedUser"></p>
+    <div class="toolbar">
+     <button id="checkAccess" class="secondary" type="button">Testar acesso ao meu perfil</button>
+     <button id="signOut" class="secondary" type="button">Sair da conta</button>
+    </div>
+    <p class="fineprint">Os dados exibidos vêm somente da sua sessão. Tokens e senhas não são mostrados nem gravados no navegador por este código.</p>
+   </section>
+   <div id="status" class="status" role="status" aria-live="polite">Conferindo a configuração…</div>
+   <p class="fineprint">Para liberar usuários reais será necessária a homologação das políticas RLS, verificação de e-mail, regras de moderação e revisão LGPD.</p>
+ </main>
+ <script type="module" src="./src/main.js"></script>
+</body>
+</html>
