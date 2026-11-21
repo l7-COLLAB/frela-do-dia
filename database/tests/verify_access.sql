@@ -1,4 +1,4 @@
--- Verificações estruturais do ambiente Neon — executar APÓS 0001 e 0002.
+-- Verificações estruturais do ambiente Neon — executar APÓS 0001, 0002 e 0003.
 -- Este script NÃO substitui os testes ponta a ponta via Neon Data API.
 DO $audit$
 DECLARE target text;
@@ -42,6 +42,19 @@ BEGIN
     OR has_table_privilege('authenticated', 'public.job_postings', 'UPDATE')
   THEN
     RAISE EXCEPTION 'Papel autenticado possui privilégio administrativo indevido';
+  END IF;
+
+  IF NOT has_function_privilege('authenticated','public.frela_auth_user_id()','EXECUTE')
+     OR has_function_privilege('anonymous','public.frela_auth_user_id()','EXECUTE')
+  THEN
+    RAISE EXCEPTION 'Ponte da identidade não restrita a usuários autenticados';
+  END IF;
+
+  IF (SELECT COUNT(*) FROM pg_policies WHERE schemaname = 'public'
+      AND (COALESCE(qual,'') LIKE '%auth.user_id()%'
+           OR COALESCE(with_check,'') LIKE '%auth.user_id()%')) <> 0
+  THEN
+    RAISE EXCEPTION 'Políticas RLS ainda dependem diretamente do schema auth';
   END IF;
 
   RAISE NOTICE 'Verificações estruturais RLS concluídas. Testar tokens reais separadamente.';
