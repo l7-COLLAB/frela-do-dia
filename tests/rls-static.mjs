@@ -6,6 +6,8 @@ const policies = readFileSync(new URL('../database/migrations/0002_rls_policies.
 const identityBridge = readFileSync(new URL('../database/migrations/0003_neon_auth_rls_bridge.sql', import.meta.url),'utf8');
 const hirersMigration = readFileSync(new URL('../database/migrations/0004_individual_hirers_and_job_types.sql', import.meta.url),'utf8');
 const hirersPolicies = readFileSync(new URL('../database/migrations/0005_individual_hirer_rls.sql', import.meta.url),'utf8');
+const moderation = readFileSync(new URL('../database/migrations/0006_private_moderation_and_hiring.sql', import.meta.url),'utf8');
+const moderationAudit = readFileSync(new URL('../database/tests/verify_moderation_security.sql', import.meta.url),'utf8');
 const verify = readFileSync(new URL('../database/tests/verify_access.sql', import.meta.url),'utf8');
 
 const tables = ['worker_profiles','companies','job_postings','job_private_locations','applications','engagements'];
@@ -52,5 +54,21 @@ assert.match(hirersPolicies, /AND c\.verification_state = 'verified'/);
 assert.match(hirersPolicies, /filled_slots < slots/);
 assert.doesNotMatch(hirersPolicies, /GRANT (?:ALL|UPDATE|DELETE) ON public\.individual_hirers TO authenticated/);
 assert.doesNotMatch(hirersMigration, /\b(?:TRUNCATE|DELETE FROM|DROP TABLE)\b/i);
-console.log('OK: sete tabelas protegidas após 0004/0005, com PF/PJ isolados e limites de vagas. Testes JWT reais continuam pendentes.');
+
+assert.match(moderation, /CREATE SCHEMA IF NOT EXISTS app_private/);
+assert.match(moderation, /REVOKE ALL ON SCHEMA app_private FROM PUBLIC, anonymous, authenticated/);
+assert.match(moderation, /ALTER TABLE app_private\.audit_events ENABLE ROW LEVEL SECURITY/);
+assert.match(moderation, /CREATE FUNCTION app_private\.review_hirer/);
+assert.match(moderation, /CREATE FUNCTION app_private\.review_job/);
+assert.match(moderation, /CREATE FUNCTION app_private\.accept_application/);
+assert.match(moderation, /SECURITY INVOKER SET search_path = pg_catalog/);
+assert.match(moderation, /IF p_decision = 'suspended' THEN[\s\S]*?UPDATE public\.job_postings/);
+assert.match(moderation, /FROM public\.job_postings WHERE id=a\.job_id FOR UPDATE/);
+assert.match(moderation, /CASE WHEN filled_slots\+1>=slots THEN 'closed'/);
+assert.match(moderation, /REVOKE EXECUTE ON FUNCTION\s+app_private\.review_hirer/);
+assert.match(moderation, /REVOKE EXECUTE ON FUNCTION\s+app_private\.accept_application/);
+assert.doesNotMatch(moderation, /GRANT EXECUTE.*(?:authenticated|anonymous)/);
+assert.match(moderationAudit, /has_function_privilege\('authenticated'/);
+console.log('OK: sete tabelas RLS e moderação privada de anunciantes, anúncios e seleção com limites. Testes JWT reais pendentes.');
+
 
