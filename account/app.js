@@ -75,6 +75,13 @@ function showSignedOut(){
  $('authPanel').hidden=false;
  $('accountPanel').hidden=true;
  $('loginPassword').value='';
+ // Evita que dados da conta anterior permaneçam em campos de um dispositivo compartilhado.
+ for(const id of ['workerForm','individualForm','companyForm']){
+  $(id).reset();
+ }
+ $('profileCards').replaceChildren();
+ $('individualSubmit').disabled=false;
+ $('companySubmit').disabled=false;
 }
 function showSignedIn(user){
  activeUser=user;
