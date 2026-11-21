@@ -20,6 +20,11 @@ jobs:
           node tests/auth-static.mjs
       - name: Validar API de desenvolvimento
         run: node tests/dev-api.mjs
+      - name: Validar painel administrativo público
+        run: |
+          node --check admin/app.js
+          node --check backend/public-site-worker.js
+          node tests/admin-static.mjs
       - name: Instalar dependências do login de homologação
         working-directory: auth-preview
         run: npm install --no-audit --no-fund
